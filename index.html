@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+
+<html lang="lo" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta id="viewportMeta" name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ຕາລີ — Admin Panel</title>
+<meta name="description" content="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Lao:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: { extend: {
+    fontFamily: { display: ['Rajdhani','Noto Sans Lao','sans-serif'], body: ['Inter','Noto Sans Lao','sans-serif'], mono: ['JetBrains Mono','monospace'] },
+    colors: { ink: { 950:'#000000',900:'#010103',850:'#030407',800:'#06070C',700:'#0D0F1A',600:'#161A2C',500:'#282E4A' }, mist: { 400:'#9498A3',300:'#B9BDC7',200:'#DCDFE6',100:'#ECEFF3' }, plasma: { 400:'#5DA0FF',500:'#1D5EE1',600:'#1246B9' }, ion: { 400:'#70CBFF',500:'#36AEFF',600:'#1C89D9' }, rarity: { common:'#9CA3AF',rare:'#3B82F6',epic:'#A855F7',legendary:'#F59E0B' } },
+    boxShadow: { glow: '0 0 0 1px rgba(29,94,225,0.25), 0 0 24px -4px rgba(29,94,225,0.35)', ionglow: '0 0 0 1px rgba(54,174,255,0.25), 0 0 24px -4px rgba(54,174,255,0.35)' },
+  }}
+}
+</script>
+<style>
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter','Noto Sans Lao',sans-serif; background:#010103; color:#ECEFF3; }
+.font-display { font-family:'Rajdhani','Noto Sans Lao',sans-serif; letter-spacing:.02em; }
+::-webkit-scrollbar{ width:10px; height:10px; }
+::-webkit-scrollbar-track{ background:#010103; }
+::-webkit-scrollbar-thumb{ background:#161A2C; border-radius:8px; }
+.clip-corner { clip-path: polygon(0 12px, 12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%); }
+.clip-corner-sm { clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%); }
+.rarity-common { --rc: #9CA3AF; } .rarity-rare { --rc: #3B82F6; } .rarity-epic { --rc: #A855F7; } .rarity-legendary { --rc: #F59E0B; }
+.rarity-border { box-shadow: 0 0 0 1px color-mix(in srgb, var(--rc) 55%, transparent), 0 0 22px -6px var(--rc); }
+.rarity-tag { color: var(--rc); background: color-mix(in srgb, var(--rc) 16%, transparent); border:1px solid color-mix(in srgb, var(--rc) 45%, transparent); }
+.scanline { position:relative; overflow:hidden; }
+.scanline::after{ content:''; position:absolute; left:0; right:0; height:2px; top:-10%; background:linear-gradient(90deg,transparent, rgba(112,203,255,.9), transparent); animation:scan 3.6s linear infinite; opacity:.7; }
+@keyframes scan { 0%{ top:-5%; } 100%{ top:105%; } }
+.grid-fade { background-image: linear-gradient(rgba(29,94,225,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(29,94,225,0.08) 1px, transparent 1px); background-size: 42px 42px; -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 20%, black 40%, transparent 90%); mask-image: radial-gradient(ellipse 70% 60% at 50% 20%, black 40%, transparent 90%); }
+.view { display:none; } .view.active { display:block; }
+.tab-panel{ display:none; } .tab-panel.active{ display:block; }
+.skeleton{ background:linear-gradient(90deg,#06070C 25%,#0D0F1A 37%,#06070C 63%); background-size:400% 100%; animation:sk 1.4s ease infinite; }
+@keyframes sk{ 0%{background-position:100% 50%} 100%{background-position:0 50%} }
+@media (max-width: 767px){ body{ padding-bottom:78px; } }
+.stat-card{ background:#06070C; border:1px solid #0D0F1A; border-radius:16px; padding:22px 16px; text-align:center; transition:.2s; }
+.stat-card:hover{ border-color:#E11D2E55; transform:translateY(-2px); }
+.stat-card .stat-ic{ width:56px; height:56px; border-radius:9999px; background:#0D0F1A; display:flex; align-items:center; justify-content:center; margin:0 auto 14px; font-size:20px; color:#B9BDC7; }
+.stat-card .stat-num{ font-family:'Rajdhani','Noto Sans Lao',sans-serif; font-weight:700; font-size:2rem; color:#ECEFF3; line-height:1; }
+.stat-card .stat-lbl{ margin-top:8px; font-size:12.5px; color:#9498A3; }
+.activity-row{ display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px; background:#06070C; border:1px solid #0D0F1A; }
+.activity-dot{ width:8px; height:8px; border-radius:9999px; background:#36AEFF; flex-shrink:0; box-shadow:0 0 8px #36AEFF; }
+.promo-badge{ display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center; }
+.promo-badge .pb-ic{ width:46px; height:46px; border-radius:9999px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-size:16px; }
+#marqueeBar, #marqueeBar2{ overflow:hidden; white-space:nowrap; background:linear-gradient(90deg,#1246B9,#1C89D9); border-bottom:1px solid rgba(255,255,255,0.15); }
+#marqueeBar2{ background:linear-gradient(90deg,#1C89D9,#1246B9); }
+#marqueeBar .marquee-track, #marqueeBar2 .marquee-track{ display:inline-block; padding-left:100%; animation:marquee-scroll 22s linear infinite; }
+#marqueeBar .marquee-track span, #marqueeBar2 .marquee-track span{ display:inline-block; padding:0 2.5rem; font-family:'Rajdhani','Noto Sans Lao',sans-serif; font-weight:600; letter-spacing:.02em; color:#fff; font-size:14px; }
+@keyframes marquee-scroll{ 0%{ transform:translateX(0); } 100%{ transform:translateX(-100%); } }
+.stock-badge{ display:inline-flex; align-items:center; gap:4px; font-size:10px; font-family:'JetBrains Mono',monospace; color:#B9BDC7; }
+.stock-badge i{ font-size:10px; }
+.stock-badge.low{ color:#F59E0B; }
+.stock-badge.out{ color:#EF4444; }
+#heroSection.has-hero-banner{ background-size:cover; background-position:center; background-repeat:no-repeat; }
+#heroBannerOverlay{ display:none; }
+#heroBannerOverlay.show{ display:block; background:linear-gradient(180deg, rgba(1,1,3,.55) 0%, rgba(1,1,3,.85) 60%, rgba(1,1,3,.96) 100%); }
+@media (max-width: 640px){
+  #view-admin h2{ font-size:1.05rem; margin-bottom:.75rem; }
+  #view-admin .admincontent p.text-2xl, #view-admin .admincontent .text-3xl{ font-size:1.15rem; }
+  #view-admin .admincontent .text-xs{ font-size:10px; }
+  #view-admin .admincontent input, #view-admin .admincontent select, #view-admin .admincontent textarea{ font-size:13px; padding:.5rem .65rem; }
+  #view-admin .admincontent button{ font-size:12px; }
+  #view-admin .admincontent .p-6{ padding:.85rem; }
+  #view-admin .admincontent .p-5{ padding:.75rem; }
+  #view-admin table{ font-size:11px; }
+  #view-admin table th, #view-admin table td{ padding:.4rem .5rem; }
+  #productFormModal .p-6, #userDetailModal .p-6{ padding:1rem; }
+  #productFormModal label, #userDetailModal label{ font-size:10px; }
+  #productFormModal input, #productFormModal select, #productFormModal textarea{ font-size:13px; padding:.5rem .65rem; }
+  #productFormModal button, #userDetailModal button{ font-size:12px; }
+}
+
+/* Fit whole image + fill empty space with a blurred copy of the same image (no black bars) */
+.img-fit{ position:relative; overflow:hidden; background-color:#010103; background-size:cover; background-position:center; isolation:isolate; }
+.img-fit::before{ content:''; position:absolute; inset:-14%; z-index:-1; background-image:inherit; background-size:cover; background-position:center; filter:blur(24px) saturate(1.25) brightness(.75); }
+.img-fit > img.fit-main{ display:block; position:relative; width:100%; height:100%; object-fit:contain; }
+
+/* ===== Blue & Black theme extras ===== */
+body{ background-attachment: fixed; }
+::selection{ background:#1D5EE1; color:#fff; }
+::-webkit-scrollbar-thumb{ background:#16357A; }
+::-webkit-scrollbar-thumb:hover{ background:#1D5EE1; }
+
+/* ===== Red-black "RGB sweep" style (from reference) ===== */
+body{ background-image: radial-gradient(ellipse 80% 45% at 50% -10%, rgba(29,94,225,.16), transparent 70%), radial-gradient(ellipse 60% 40% at 100% 100%, rgba(18,70,185,.10), transparent 70%); }
+@keyframes rgbSweep{ 0%{ background-position:125% 0; } 100%{ background-position:-25% 0; } }
+@keyframes redPulse{ 0%,100%{ box-shadow:0 0 0 1px rgba(29,94,225,.55), 0 0 18px -6px rgba(29,94,225,.7); } 50%{ box-shadow:0 0 0 1px rgba(70,127,255,.85), 0 0 30px -4px rgba(40,100,255,.95); } }
+/* glossy red buttons */
+body .bg-plasma-500{ background-image:linear-gradient(180deg,#3B76FF 0%,#1D5EE1 50%,#1044B0 100%); border:1px solid rgba(120,166,255,.35); box-shadow:inset 0 1px 0 rgba(255,255,255,.4), inset 0 -2px 0 rgba(0,0,0,.25), 0 8px 20px -8px rgba(29,94,225,.85); }
+body .bg-plasma-500:hover, body .hover\:bg-plasma-600:hover{ filter:brightness(1.12); }
+/* header: black -> deep red, glowing red edge */
+body header.sticky{ background:linear-gradient(90deg,rgba(0,0,0,.94),rgba(6,23,70,.9) 50%,rgba(0,0,0,.94)); border-bottom:1px solid rgba(29,94,225,.5); box-shadow:0 8px 26px -12px rgba(29,94,225,.7); }
+/* headings glow */
+h1.font-display, h2.font-display{ text-shadow:0 0 18px rgba(29,94,225,.45); }
+/* stat cards: soft RGB sweep */
+.stat-card{ position:relative; overflow:hidden; isolation:isolate; background:#000; border-color:#161A2C; }
+.stat-card::before{ content:''; position:absolute; inset:0; z-index:-1; opacity:.28; background:linear-gradient(115deg,transparent 20%,#174BFF 32%,#ff9100 40%,#00e676 48%,#00b0ff 56%,#7c4dff 64%,#d500f9 72%,transparent 84%); background-size:260% 100%; background-repeat:no-repeat; animation:rgbSweep 6s ease-in-out infinite alternate; }
+
+/* ===== Stat tiles (red bar + big red number + faint icon watermark) ===== */
+.stat-tile{ position:relative; overflow:hidden; padding:14px 4px 18px 4px; min-height:118px; background:transparent; }
+.stat-tile .st-head{ display:flex; align-items:center; gap:8px; font-family:'Noto Sans Lao','Rajdhani',sans-serif; font-size:15px; color:#ECEFF3; position:relative; z-index:1; }
+.stat-tile .st-head::before{ content:''; width:4px; height:18px; border-radius:3px; background:#1D5EE1; box-shadow:0 0 10px rgba(29,94,225,.85); flex-shrink:0; }
+.stat-tile .st-head i{ color:#3071E8; font-size:15px; }
+.stat-tile .st-val{ display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 8px; margin-top:10px; position:relative; z-index:1; }
+.stat-tile .st-num{ font-family:'Rajdhani','Noto Sans Lao',sans-serif; font-weight:700; font-size:clamp(2rem,9vw,3.1rem); line-height:1; color:#3071E8; text-shadow:0 0 22px rgba(29,94,225,.45); }
+.stat-tile .st-unit{ font-size:15px; color:#ECEFF3; }
+.stat-tile .st-bg{ position:absolute; right:-8px; bottom:-16px; font-size:92px; color:rgba(29,94,225,.15); z-index:0; pointer-events:none; }
+</style>
+</head>
+<body class="font-body antialiased">
+
+
+<style>
+@keyframes tohBob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-12px); } }
+.toh-bob{ display:inline-block; animation:tohBob 1.1s ease-in-out infinite; }
+</style>
+<div id="loadOverlay" class="fixed inset-0 z-[999] bg-ink-950 flex items-center justify-center">
+  <div class="text-center">
+    <div class="toh-bob font-display font-700 text-5xl tracking-widest text-plasma-500" style="text-shadow:0 0 22px rgba(29,94,225,.55)">TALI</div>
+  </div>
+</div>
+
+
+<div id="topStack" class="sticky top-0 z-50">
+<div id="marqueeBar2" class="hidden py-1.5"><div class="marquee-track" id="marqueeTrack2"></div></div>
+<div id="marqueeBar" class="hidden py-1.5"><div class="marquee-track" id="marqueeTrack"></div></div>
+
+
+<header class="sticky top-0 z-50 backdrop-blur-xl bg-ink-950/80 border-b border-ink-700/60">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16 gap-4">
+      <a href="#" onclick="go('admin')" class="flex items-center gap-2 shrink-0">
+        <div class="site-logo-slot w-9 h-9 rounded-lg bg-gradient-to-br from-plasma-500 to-ion-500 flex items-center justify-center clip-corner-sm overflow-hidden"><i class="fa-solid fa-user-shield text-ink-950 text-sm"></i></div>
+        <span class="site-name-text font-display font-700 text-xl tracking-wide text-mist-100">TOH<span class="text-plasma-400"> Shop Admin</span></span>
+      </a>
+      <div class="flex-1 max-w-md hidden lg:block" style="display:none"><input id="navSearch" type="text" class="hidden"></div>
+      <div class="flex items-center gap-2">
+        <i id="themeIcon" class="hidden fa-solid fa-moon"></i>
+        <div id="navBalanceChip" class="hidden items-center gap-1 px-3 py-1.5 rounded-full bg-ink-800 border border-ink-600 font-mono text-sm text-ion-400 font-600"><span id="navBalanceValue">0</span> ₭</div>
+        <div id="notifBell" class="relative hidden">
+          <span id="notifDot" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-ion-500 rounded-full text-[10px] flex items-center justify-center text-ink-950 font-bold">0</span>
+          <div id="notifPanel" class="hidden absolute right-0 mt-2 w-80 bg-ink-800 border border-ink-600 rounded-xl shadow-2xl overflow-hidden">
+            <div class="px-4 py-3 border-b border-ink-700 font-display tracking-wide text-mist-200">ການແຈ້ງເຕືອນ</div>
+            <div id="notifList" class="max-h-80 overflow-y-auto divide-y divide-ink-700"></div>
+          </div>
+        </div>
+        <div id="authArea" class="hidden"></div>
+      </div>
+    </div>
+    <div id="mobileMenu" class="hidden"></div>
+  </div>
+</header>
+</div><!-- /topStack -->
+
+
+<main id="app">
+
+
+
+<section id="view-admin" class="view">
+  <div class="max-w-[1500px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-4 lg:gap-6">
+      <aside class="bg-ink-800/60 border border-ink-700 rounded-xl p-3 sm:p-4 h-fit lg:sticky lg:top-20">
+        <div class="flex items-center gap-2 px-2 pb-3 mb-2 border-b border-ink-700"><i class="fa-solid fa-user-shield text-plasma-400"></i><span class="font-display font-600 text-mist-100 text-sm">Admin Panel</span></div>
+        <nav class="grid grid-cols-2 lg:grid-cols-1 gap-1 font-display text-xs sm:text-sm">
+          <button onclick="adminTab('overview')" data-tab="overview" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-gauge w-4"></i> Dashboard</button>
+          <button onclick="adminTab('products')" data-tab="products" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-box w-4"></i> ຈັດການສິນຄ້າ</button>
+          <button onclick="adminTab('users')" data-tab="users" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-users w-4"></i> ຈັດການຜູ້ໃຊ້</button>
+          <button onclick="adminTab('orders')" data-tab="orders" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-cart-shopping w-4"></i> ຈັດການອໍເດີ</button>
+          <button onclick="adminTab('payments')" data-tab="payments" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-money-check-dollar w-4"></i> ຢືນຢັນການຊຳລະ</button>
+          <button onclick="adminTab('topups')" data-tab="topups" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-wallet w-4"></i> ຢືນຢັນການເຕີມເງິນ <span id="topupBadge" class="hidden ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold align-middle"></span></button>
+          <button onclick="adminTab('codes')" data-tab="codes" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-ticket w-4"></i> ໂຄດເຕີມເງິນ</button>
+          <button onclick="adminTab('qrsettings')" data-tab="qrsettings" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-qrcode w-4"></i> ຕັ້ງຄ່າ QR ຊຳລະເງິນ</button>
+          <button onclick="adminTab('bgsettings')" data-tab="bgsettings" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-image w-4"></i> ຕັ້ງຄ່າພື້ນຫຼັງເວັບ</button>
+          <button onclick="adminTab('brandsettings')" data-tab="brandsettings" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-shield-halved w-4"></i> ໂລໂກ ແລະ ຊື່ເວັບ</button>
+          <button onclick="adminTab('herobanner')" data-tab="herobanner" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-panorama w-4"></i> ແບນເນີ Hero</button>
+          <button onclick="adminTab('marqueesettings')" data-tab="marqueesettings" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-bullhorn w-4"></i> ຂໍ້ຄວາມແລ່ນ</button>
+          <button onclick="adminTab('fbnotify')" data-tab="fbnotify" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-brands fa-facebook-messenger w-4"></i> ແຈ້ງເຕືອນເຟສບຸກ</button>
+          <button onclick="adminTab('notifications')" data-tab="notifications" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-bell w-4"></i> ຈັດການແຈ້ງເຕືອນ</button>
+        </nav>
+      </aside>
+      <div>
+        <div id="adm-overview" class="admincontent">
+          <h2 class="font-display font-700 text-2xl text-mist-100 mb-5">ພາບລວມລະບົບ</h2>
+          <div class="grid grid-cols-2 xl:grid-cols-4 gap-x-4 gap-y-3 mb-8">
+            <div class="stat-tile"><div class="st-head"><i class="fa-solid fa-user"></i><span>ຜູ້ໃຊ້ທັງໝົດ</span></div><div class="st-val"><span class="st-num" id="admStatUsers">0</span><span class="st-unit">ຄົນ</span></div><i class="fa-solid fa-user st-bg"></i></div>
+            <div class="stat-tile"><div class="st-head"><i class="fa-solid fa-cube"></i><span>ສິນຄ້າທັງໝົດ</span></div><div class="st-val"><span class="st-num" id="admStatProducts">0</span><span class="st-unit">ລາຍການ</span></div><i class="fa-solid fa-cube st-bg"></i></div>
+            <div class="stat-tile"><div class="st-head"><i class="fa-solid fa-wallet"></i><span>ຍອດເຕີມເງິນ</span></div><div class="st-val"><span class="st-num" id="admStatTopup">0</span><span class="st-unit">₭</span></div><i class="fa-solid fa-wallet st-bg"></i></div>
+            <div class="stat-tile"><div class="st-head"><i class="fa-solid fa-coins"></i><span>ລາຍຮັບລວມ</span></div><div class="st-val"><span class="st-num" id="admStatRevenue">0</span><span class="st-unit">₭</span></div><i class="fa-solid fa-coins st-bg"></i></div>
+          </div>
+          <div class="bg-ink-800/60 border border-ink-700 rounded-xl p-5"><p class="font-display text-mist-100 font-600 mb-4">ອໍເດີຫຼ້າສຸດ</p><div id="admRecentOrders" class="space-y-2 text-sm"></div></div>
+        </div>
+
+
+<div id="adm-products" class="admincontent hidden">
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="font-display font-700 text-2xl text-mist-100">ຈັດການສິນຄ້າ</h2>
+    <button onclick="openProductForm()" class="px-4 py-2.5 rounded-lg bg-plasma-500 hover:bg-plasma-600 font-display font-600 text-sm"><i class="fa-solid fa-plus mr-1"></i> ເພີ່ມສິນຄ້າ</button>
+  </div>
+  <div class="bg-ink-800/60 border border-ink-700 rounded-xl overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead><tr class="text-left text-mist-400 font-display uppercase text-xs border-b border-ink-700"><th class="p-3">ID</th><th class="p-3">ຊື່</th><th class="p-3">ໝວດ</th><th class="p-3">ລາຄາ</th><th class="p-3">ສະຕັອກ</th><th class="p-3">ສະຖານະ</th><th class="p-3">ວັນທີ</th><th class="p-3">ຈັດການ</th></tr></thead>
+      <tbody id="admProductTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="adm-users" class="admincontent hidden">
+  <h2 class="font-display font-700 text-2xl text-mist-100 mb-5">ຈັດການຜູ້ໃຊ້</h2>
+  <div class="bg-ink-800/60 border border-ink-700 rounded-xl overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead><tr class="text-left text-mist-400 font-display uppercase text-xs border-b border-ink-700"><th class="p-3">ຊື່ຜູ້ໃຊ້</th><th class="p-3">ອີເມວ</th><th class="p-3">ເບີໂທ</th><th class="p-3">ວັນທີສະໝັກ</th><th class="p-3">ສະຖານະ</th><th class="p-3">ຈັດການ</th></tr></thead>
+      <tbody id="admUserTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="adm-orders" class="admincontent hidden">
+  <h2 class="font-display font-700 text-2xl text-mist-100 mb-5">ຈັດການອໍເດີ</h2>
+  <div class="bg-ink-800/60 border border-ink-700 rounded-xl overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead><tr class="text-left text-mist-400 font-display uppercase text-xs border-b border-ink-700"><th class="p-3">ອໍເດີ ID</th><th class="p-3">ຜູ້ຊື້</th><th class="p-3">ສິນຄ້າ</th><th class="p-3">ຍອດ</th><th class="p-3">ສະຖານະ</th><th class="p-3">ຈັດການ</th></tr></thead>
+      <tbody id="admOrderTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="adm-payments" class="admincontent hidden"><h2 class="font-display font-700 text-2xl text-mist-100 mb-5">ຢືນຢັນການຊຳລະເງິນ</h2><div id="admPaymentList" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4"></div></div>
+<div id="adm-topups" class="admincontent hidden">
+  <div class="flex items-center justify-between gap-3 mb-5">
+    <h2 class="font-display font-700 text-2xl text-mist-100">ຢືນຢັນການເຕີມເງິນ</h2>
+    <button onclick="manualRefreshTopups()" class="px-3 py-2 rounded-lg bg-ink-700 hover:bg-ink-600 text-mist-200 text-xs font-display"><i class="fa-solid fa-rotate mr-1"></i>ໂຫຼດຄືນໃໝ່</button>
+  </div>
+  <div id="admTopupList" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+  <div class="mt-8">
+    <p class="font-display text-mist-100 font-600 mb-1">ການຕັດສິນຂອງ AI ຫຼ້າສຸດ</p>
+    <p class="text-xs text-mist-400 mb-3">ລາຍການທີ່ AI ອະນຸມັດ/ປະຕິເສດອັດຕະໂນມັດແລ້ວ — ກວດຄືນ ແລະ ແກ້ໄຂໄດ້ຖ້າ AI ຕັດສິນຜິດ</p>
+    <div id="admAiDecisionsList" class="space-y-2"></div>
+  </div>
+</div>
+
+<div id="adm-codes" class="admincontent hidden">
+  <div class="flex items-center justify-between gap-3 mb-5">
+    <h2 class="font-display font-700 text-2xl text-mist-100">ໂຄດເຕີມເງິນ</h2>
+    <button onclick="renderAdminCodes()" class="px-3 py-2 rounded-lg bg-ink-700 hover:bg-ink-600 text-mist-200 text-xs font-display"><i class="fa-solid fa-rotate mr-1"></i>ໂຫຼດຄືນໃໝ່</button>
+  </div>
+  <div class="bg-ink-800/60 border border-ink-700 rounded-xl p-5 max-w-lg mb-6">
+    <p class="font-display text-mist-100 font-600 mb-3">ສ້າງໂຄດໃໝ່</p>
+    <label class="text-xs font-display text-mist-400 uppercase">ຈຳນວນເງິນໃນໂຄດ (₭)</label>
+    <input id="codeAmount" type="number" min="1" placeholder="ເຊັ່ນ 10000" class="w-full mt-1 mb-3 px-3 py-2.5 rounded-lg bg-ink-900 border border-ink-600 text-mist-100 text-sm font-mono">
+    <label class="text-xs font-display text-mist-400 uppercase">ຈຳກັດຈຳນວນຄົນທີ່ໃຊ້ໄດ້</label>
+    <input id="codeMaxUses" type="number" min="1" placeholder="ເຊັ່ນ 10 ຄົນ" class="w-full mt-1 mb-4 px-3 py-2.5 rounded-lg bg-ink-900 border border-ink-600 text-mist-100 text-sm font-mono">
+    <button onclick="createRedeemCode()" class="w-full py-2.5 rounded-lg bg-plasma-500 hover:bg-plasma-600 font-display font-600 text-sm"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> ສ້າງໂຄດ (ສຸ່ມອັດຕະໂນມັດ)</button>
+    <p class="text-[11px] text-mist-400 mt-2">ລະບົບຈະສຸ່ມໂຄດໃຫ້ເອງ. ຜູ້ໃຊ້ແຕ່ລະຄົນໃຊ້ໂຄດດຽວກັນໄດ້ພຽງ 1 ຄັ້ງ.</p>
+  </div>
+  <div class="bg-ink-800/60 border border-ink-700 rounded-xl overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead><tr class="text-left text-mist-400 font-display uppercase text-xs border-b border-ink-700"><th class="p-3">ໂຄດ</th><th class="p-3">ຈຳນວນເງິນ</th><th class="p-3">ໃຊ້ແລ້ວ / ຈຳກັດ</th><th class="p-3">ສະຖານະ</th><th class="p-3">ວັນທີສ້າງ</th><th class="p-3">ຈັດການ</th></tr></thead>
+      <tbody id="admCodeTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="adm-qrsettings" class="admincontent hidden">
+  <h2 class="font-display font-700 text-2xl text-mist-100 mb-5">ຕັ້ງຄ່າ QR ຮັບຊຳລະເງິນ</h2>
+  <div class="space-y-6 max-w-lg">
+    <!-- QR upload -->
+    <div class="bg-ink-800/60 border border-ink-700 rounded-xl p-6">
+      <h3 class="font-display font-600 text-mist-100 mb-2">ຮູບ QR Code</h3>
+      <p class="text-sm text-mist-400 mb-4">ອັບໂຫຼດຮູບ QR Code ຂອງແອດມິນ (ເຊັ່ນ BCEL One, LDB, ONEPAY) ເພື່ອໃຫ້ລູກຄ້າສະແກນຊຳລະເງິນ</p>
+      <div id="adminQrPreview" class="w-48 h-48 rounded-lg bg-ink-900 border border-ink-700 flex items-center justify-center text-mist-400 text-sm mb-4">ຍັງບໍ່ມີ QR</div>
+      <input id="adminQrInput" type="file" accept="image/*" class="block w-full text-sm text-mist-300 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-ink-700 file:text-mist-100 hover:file:bg-ink-600">
+      <div class="flex gap-2 mt-4">
+        <button onclick="saveAdminQr()" class="px-5 py-2.5 rounded-lg bg-plasma-500 hover:bg-plasma-600 font-display font-600 text-sm">ບັນທຶກ QR</button>
+        <button onclick="removeAdminQr()" class="px-5 py-2.5 rounded-lg bg-ink-700 hover:bg-ink-600 text-mist-300 font-display font-600 text-sm">ລຶບ QR</button>
+      </div>
+    </div>
+    <!-- QR per amount -->
+    <div class="bg-ink-800/60 border border-ink-700 rounded-xl p-6">
+      <h3 class="font-display font-600 text-mist-100 mb-1">QR ແຍກຕາມຈຳນວນເງິນ</h3>
+      <p class="text-sm text-mist-400 mb-4">ຖ້າອັບໂຫຼດ QR ສຳລັບຈຳນວນໃດ, ລູກຄ້າທີ່ເລືອກຈຳນວນນັ້ນຈະເຫັນ QR ສະເພາະຂອງຈຳນວນນັ້ນ. ຖ້າບໍ່ອັບໂຫຼດ ຈະໃຊ້ QR ຫຼັກ.</p>
+      <div class="space-y-3" id="qrAmountList"></div>
+      <button onclick="renderQrAmountAdmin()" class="mt-4 text-xs text-ion-400 hover:underline"><i class="fa-solid fa-rotate-right mr-1"></i>ໂຫຼດຄືນ</button>
+    </div>
+  </div>
+</div>
+
+<div id="adm-bgsettings" class="admincontent hidden">
+  <h2 class="font-display font-700 text-2xl text-mist-100 mb-5">ຕັ້ງຄ່າພື້ນຫຼັງເວັບ</h2>
+  <div class="bg-ink-800/60 border border-ink-700 rounded-xl p-6 max-w-lg">
+    <p class="text-sm text-mist-400 mb-4">ອັບໂຫຼດຮູບພື້ນຫຼັງເພື່ອນຳໃຊ້ທົ່ວທັງເວັບໄຊ (ຈະເປັນຄື fixed background ຢູ່ດ້ານຫຼັງຂອງທຸກອົງປະກອບ). ຖ້າຕ້ອງການໂພສຮູບແບນເນີໂຄສະນາ (ເຊັ່ນ Free Fire) ໃຫ້ໄປທີ່ໜ້າ "ແບນເນີ Hero" ແທນ.</p>
+    <div id="adminBgPreview" class="w-full h-40 rounded-lg bg-ink-900 border border-ink-700 flex items-center justify-center text-mist-400 text-sm mb-4 bg-cover bg-center">ຍັງບໍ່ມີພື້ນຫຼັງ (ໃຊ້ຄ່າເລີ່ມຕົ້ນ)</div>
+    <input id="adminBgInput" type="file" accept="image/*" class="block w-full text-sm text-mist-300 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-ink-700 file:text-mist-100 hover:file:bg-ink-600">
+    <div class="flex gap-2 mt-4">
+      <button onclick="saveAdminBg()" class="px-5 py-2.5 rounded-lg bg-plasma-500 hover:bg-plasma-600 font-display font-600 text-sm">ບັນທຶກພື້ນຫຼັງ</button>
+      <button onclick="removeAdminBg()" class="px-5 py-2.5 rounded-lg bg-ink-700 hover:bg-ink-600 text-mist-300 font-display font-600 text-sm">ລຶບພື້ນຫຼັງ</button>
+    </div>
+  </div>
+</div>
+
+<div id="adm-brandsettings" class="admincontent hidden">
+  <h2 class="font-display font-700 text-2xl text-mist-100 mb-5">ໂລໂກ ແລະ ຊື່ເວັບ</h2>
+  <div class="bg-ink-800/60 border border-ink-700 rounded-xl p-6 max-w-lg">
+    <p class="text-sm text-mist-400 mb-4">ປ່ຽນໂລໂກ ແລະ ຊື່ຮ້ານທີ່ສະແດງຢູ່ໜ້າເວັບ. ຖ້າບໍ່ອັບໂຫຼດໂລໂກ, ລະບົບຈະໃຊ້ໄອຄອນເລີ່ມຕົ້ນ.</p>
+    <label class="text-xs font-display text-mist-400 uppercase">ໂລໂກເວັບ</label>
+    <div class="flex items-center gap-4 mt-2 mb-4">
+      <div id="adminLogoPreview" class="w-16 h-16 rounded-lg bg-ink-900 border border-ink-700 flex items-center justify-center text-mist-400 overflow-hidden shrink-0"></div>
+      <input id="adminLogoInput" type="file" accept="image/*" class="block w-full text-sm text-mist-300 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-ink-700 file:text-mist-100 hover:file:bg-ink-600">
+    </div>
+    <label class="text-xs font-display text-mist-400 uppercase">ຊື່ຮ້ານ / ຊື່ເວັບ</label>
+    <input id="adminSiteName" type="text" placeholder="TOH Shop" class="mt-1.5 w-full bg-ink-900 border border-ink-600 rounded-lg px-4 py-2.5 text-mist-100 focus:outline-none focus:ring-2 focus:ring-plasma-500/50">
+    <div class="flex gap-2 mt-5">
+      <button onclick="saveAdminBrand()" class="px-5 py-2.5 rounded-lg bg-plasma-500 hover:bg-plasma-600 font-display font-600 text-sm">ບັນທຶກ</button>
+      <button onclick="resetAdminBrand()" class="px-5 py-2.5 rounded-lg bg-ink-700 hover:bg-ink-600 text-mist-300 font-display font-600 text-sm">ໃຊ້ຄ່າເລີ່ມຕົ້ນ</button>
+    </div>
+  </div>
+</div>
+
+<div id="adm-herobanner" class="admincontent hidden">
+  <h2 class="font-display font-700 text-2xl text-mist-100 mb-5">ແບນເນີ Hero (ໜ້າຫຼັກ)</h2>
+  <div class="bg-ink-800/60 border border-ink-700 rounded-xl p-6 max-w-lg">
+    <p class="text-sm text-mist-400 mb-4">ອັບໂຫຼດຮູບແບນເນີໂຄສະນາ ຮູບນີ້ຈະສະແດງເປັນພື້ນຫຼັງຂອງສ່ວນ Hero ຢູ່ເທິງສຸດຂອງໜ້າຫຼັກ ໂດຍມີເງົາມືດຄຸມ. ແນະນຳຮູບແນວນອນ ຄວາມລະອຽດສູງ.</p>
+    <div id="adminHeroBannerPreview" class="w-full aspect-[16/9] rounded-lg bg-ink-900 border border-ink-700 flex items-center justify-center text-mist-400 text-sm mb-4 bg-cover bg-center overflow-hidden">ຍັງບໍ່ມີແບນເນີ</div>
+    <input id="adminHeroBannerInput" type="file" accept="image/*" class="block w-full text-sm text-mist-300 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-ink-700 file:text-mist-100 hover:file:bg-ink-600">
+    <div class="flex gap-2 mt-4">
+      <button onclick="saveAdminHeroBanner()" class="px-5 py-2.5 rounded-lg bg-plasma-500 hover:bg-plasma-600 font-display font-600 text-sm">ບັນທຶກແບນເນີ</button>
+      <button onclick="removeAdminHeroBanner()" class="px-5 py-2.5 rounded-lg bg-ink-700 hover:bg-ink-600 text-mist-300 font-display font-600 text-sm">ລຶບແບນເນີ</button>
+    </div>
+  </div>
+</div>
+
+<div id="adm-marqueesettings" class="admincontent hidden">
+  <h2 class="font-display font-700 text-2xl text-mist-100 mb-5">ຂໍ້ຄວາມແລ່ນໂປຣໂມຊັນ</h2>
+  <div class="bg-ink-800/60 border border-ink-700 rounded-xl p-6 max-w-lg mb-6">
+    <p class="font-display text-mist-100 font-600 mb-1">ແຖບທີ 1</p>
+    <p class="text-sm text-mist-400 mb-4">ຂໍ້ຄວາມນີ້ຈະແລ່ນຢູ່ເທິງສຸດຂອງທຸກໜ້າ. ປະຫວ່າງໄວ້ຫວ່າງເພື່ອເຊື່ອງແຖບນີ້.</p>
+    <label class="text-xs font-display text-mist-400 uppercase">ຂໍ້ຄວາມໂປຣໂມຊັນ</label>
+    <textarea id="marqueeInput" rows="3" placeholder="ຕົວຢ່າງ: 🔥 ໂປຣໂມຊັນພິເສດ! ເຕີມເງິນຄັ້ງທຳອິດຮັບໂບນັດ 10% — ຕິດຕໍ່ແອດມິນດຽວນີ້!" class="mt-1.5 w-full bg-ink-900 border border-ink-600 rounded-lg px-4 py-2.5 text-mist-100"></textarea>
+    <label class="text-xs font-display text-mist-400 uppercase mt-4 block">ຄວາມໄວ (ວິນາທີຕໍ່ຮອບ — ຕົວເລກຍິ່ງນ້ອຍ ແລ່ນຍິ່ງໄວ)</label>
+    <input id="marqueeSpeedInput" type="number" min="3" max="120" step="1" placeholder="22" class="mt-1.5 w-32 bg-ink-900 border border-ink-600 rounded-lg px-4 py-2.5 text-mist-100">
+    <div class="flex gap-2 mt-4">
+      <button onclick="saveMarquee()" class="px-5 py-2.5 rounded-lg bg-plasma-500 hover:bg-plasma-600 font-display font-600 text-sm">ບັນທຶກ</button>
+      <button onclick="removeMarquee()" class="px-5 py-2.5 rounded-lg bg-ink-700 hover:bg-ink-600 text-mist-300 font-display font-600 text-sm">ລຶບ / ເຊື່ອງແຖບ</button>
+    </div>
+  </div>
+  <div class="bg-ink-800/60 border border-ink-700 rounded-xl p-6 max-w-lg">
+    <p class="font-display text-mist-100 font-600 mb-1">ແຖບທີ 2 (ຢູ່ເທິງສຸດ, ແຍກຕ່າງຫາກຈາກແຖບທີ 1)</p>
+    <p class="text-sm text-mist-400 mb-4">ປະຫວ່າງໄວ້ຫວ່າງເພື່ອເຊື່ອງແຖບນີ້.</p>
+    <label class="text-xs font-display text-mist-400 uppercase">ຂໍ້ຄວາມໂປຣໂມຊັນ (ແຖບທີ 2)</label>
+    <textarea id="marqueeInput2" rows="3" placeholder="ຕົວຢ່າງ: 📢 ຕິດຕໍ່ແອດມິນເພື່ອຮັບໂປຣໂມຊັນພິເສດ!" class="mt-1.5 w-full bg-ink-900 border border-ink-600 rounded-lg px-4 py-2.5 text-mist-100"></textarea>
+    <label class="text-xs font-display text-mist-400 uppercase mt-4 block">ຄວາມໄວ (ວິນາທີຕໍ່ຮອບ — ຕົວເລກຍິ່ງນ້ອຍ ແລ່ນຍິ່ງໄວ)</label>
+    <input id="marqueeSpeedInput2" type="number" min="3" max="120" step="1" placeholder="22" class="mt-1.5 w-32 bg-ink-900 border border-ink-600 rounded-lg px-4 py-2.5 text-mist-100">
+    <div class="flex gap-2 mt-4">
+      <button onclick="saveMarquee2()" class="px-5 py-2.5 rounded-lg bg-plasma-500 hover:bg-plasma-600 font-display font-600 text-sm">ບັນທຶກ</button>
+      <button onclick="removeMarquee2()" class="px-5 py-2.5 rounded-lg bg-ink-700 hover:bg-ink-600 text-mist-300 font-display font-600 text-sm">ລຶບ / ເຊື່ອງແຖບ</button>
+    </div>
+  </div>
+</div>
+
+<div id="adm-fbnotify" class="admincontent hidden">
+  <h2 class="font-display font-700 text-2xl text-mist-100 mb-5">ແຈ້ງເຕືອນເຟສບຸກ (CallMeBot)</h2>
+  <div class="bg-ink-800/60 border border-ink-700 rounded-xl p-6 max-w-lg">
+    <p class="text-sm text-mist-400 mb-2">ເມື່ອລູກຄ້າແຈ້ງເຕີມເງິນ, ລະບົບຈະສົ່ງຂໍ້ຄວາມແຈ້ງເຕືອນເຂົ້າ Facebook Messenger ຂອງທ່ານໂດຍອັດຕະໂນມັດ (ຜ່ານ CallMeBot) ເຖິງແມ່ນວ່າແອດມິນຈະບໍ່ຢູ່ໜ້າເວັບກໍ່ຕາມ.</p>
+    <p class="text-xs text-mist-400 mb-4">ວິທີເອົາ API Key: ເປີດ Messenger, ຄົ້ນຫາ ແລະ ແຊັດກັບ <b class="text-mist-200">Callmebot</b> → ພິມ <b class="text-mist-200">create apikey</b> → ມັນຈະສົ່ງ API Key ກັບມາ, ຄັດລອກມາໃສ່ຊ່ອງລຸ່ມນີ້.</p>
+    <label class="text-xs font-display text-mist-400 uppercase">CallMeBot API Key</label>
+    <input id="fbApiKeyInput" type="text" placeholder="e.g. P46OrIYtjK7zq6IP" class="mt-1.5 w-full bg-ink-900 border border-ink-600 rounded-lg px-4 py-2.5 text-mist-100 focus:outline-none focus:ring-2 focus:ring-plasma-500/50">
+    <label class="text-xs font-display text-mist-400 uppercase mt-4 block">ລິ້ງໜ້າແອດມິນ (ຈະແປະໃສ່ໃນຂໍ້ຄວາມແຈ້ງເຕືອນ ໃຫ້ແອດມິນກົດໄປກວດ/ອະນຸມັດໄດ້ໄວ)</label>
+    <input id="fbAdminUrlInput" type="text" placeholder="https://admin94357757.netlify.app" class="mt-1.5 w-full bg-ink-900 border border-ink-600 rounded-lg px-4 py-2.5 text-mist-100 focus:outline-none focus:ring-2 focus:ring-plasma-500/50">
+    <div class="flex gap-2 mt-4">
+      <button onclick="saveFbNotifySettings()" class="px-5 py-2.5 rounded-lg bg-plasma-500 hover:bg-plasma-600 font-display font-600 text-sm">ບັນທຶກ</button>
+      <button onclick="testFbNotify()" class="px-5 py-2.5 rounded-lg bg-ion-500 hover:bg-ion-600 text-ink-950 font-display font-600 text-sm"><i class="fa-solid fa-paper-plane mr-1"></i>ສົ່ງທົດສອບ</button>
+      <button onclick="removeFbNotifySettings()" class="px-5 py-2.5 rounded-lg bg-ink-700 hover:bg-ink-600 text-mist-300 font-display font-600 text-sm">ລຶບ</button>
+    </div>
+  </div>
+</div>
+
+
+
+<div id="adm-notifications" class="admincontent hidden">
+  <h2 class="font-display font-700 text-2xl text-mist-100 mb-5">ຈັດການແຈ້ງເຕືອນ</h2>
+  <div class="bg-ink-800/60 border border-ink-700 rounded-xl p-5 max-w-xl">
+    <label class="text-xs font-display text-mist-400 uppercase">ຫົວຂໍ້</label>
+    <input id="broadcastTitle" class="mt-1.5 w-full bg-ink-900 border border-ink-600 rounded-lg px-4 py-2.5 text-mist-100">
+    <label class="text-xs font-display text-mist-400 uppercase mt-4 block">ຂໍ້ຄວາມ</label>
+    <textarea id="broadcastMsg" rows="3" class="mt-1.5 w-full bg-ink-900 border border-ink-600 rounded-lg px-4 py-2.5 text-mist-100"></textarea>
+    <button onclick="broadcastNotification()" class="mt-4 px-5 py-2.5 rounded-lg bg-ion-500 hover:bg-ion-600 text-ink-950 font-display font-600"><i class="fa-solid fa-paper-plane mr-1"></i> ສົ່ງໃຫ້ຜູ້ໃຊ້ທັງໝົດ</button>
+  </div>
+</div>
+
+  </div>
+</div>
+
+
+  </div>
+</section>
+
+
+</main>
+
+
+<footer class="border-t border-ink-700/60 mt-10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <div class="site-logo-slot w-8 h-8 rounded-lg bg-gradient-to-br from-plasma-500 to-ion-500 flex items-center justify-center clip-corner-sm overflow-hidden"><i class="fa-solid fa-gamepad text-ink-950 text-xs"></i></div>
+        <span class="site-name-text font-display font-700 text-mist-100">TOH<span class="text-plasma-400"> Shop</span></span>
+      </div>
+    </div>
+    <div><p class="font-display font-600 text-mist-100 mb-3">ຊ່ວຍເຫຼືອ</p><ul class="space-y-2 text-sm text-mist-400">
+      <li><a href="https://wa.me/8562078523207" target="_blank" rel="noopener" class="hover:text-green-400"><i class="fa-brands fa-whatsapp mr-1.5"></i>WhatsApp: 020 7852 3207</a></li>
+      <li><a href="https://line.me/ti/p/anQuhVmQTh" target="_blank" rel="noopener" class="hover:text-green-400"><i class="fa-brands fa-line mr-1.5"></i>Line</a></li>
+    </ul></div>
+    <div><p class="font-display font-600 text-mist-100 mb-3"></p>
+      <div class="flex gap-3 text-mist-400 text-lg"></div>
+    </div>
+  </div>
+  <div class="border-t border-ink-700/60 py-5 text-center text-xs text-mist-400">© 2026 ຕາລີ — ຮ້ານຂາຍພາແນລ Free Fire</div>
+</footer>
+
+
+<div id="imgLightbox" class="hidden fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4" onclick="closeImgLightbox()">
+  <button onclick="closeImgLightbox()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-ink-800 border border-ink-600 text-mist-100 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+  <img id="imgLightboxImg" src="" class="max-w-full max-h-full object-contain rounded-lg" onclick="event.stopPropagation()">
+</div>
+
+
+<div id="userDetailModal" class="hidden fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-ink-850 border border-ink-700 rounded-2xl max-w-2xl w-full max-h-[88vh] overflow-y-auto clip-corner">
+    <div id="userDetailModalBody" class="p-6"></div>
+  </div>
+</div>
+
+
+<div id="productFormModal" class="hidden fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-ink-850 border border-ink-700 rounded-2xl max-w-lg w-full max-h-[88vh] overflow-y-auto clip-corner">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h3 id="pfTitle" class="font-display font-700 text-xl text-mist-100">ເພີ່ມສິນຄ້າ</h3>
+        <button onclick="closeProductForm()" class="text-mist-400 hover:text-mist-100"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <input type="hidden" id="pfId">
+      <div class="space-y-3">
+        <div><label class="text-xs font-display text-mist-400 uppercase">ຊື່ສິນຄ້າ</label><input id="pfName" class="mt-1 w-full bg-ink-900 border border-ink-600 rounded-lg px-3 py-2 text-mist-100"></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="text-xs font-display text-mist-400 uppercase">ໝວດໝູ່</label><select id="pfCategory" class="mt-1 w-full bg-ink-900 border border-ink-600 rounded-lg px-3 py-2 text-mist-100"></select></div>
+          <div><label class="text-xs font-display text-mist-400 uppercase">ລາຄາ (₭)</label><input id="pfPrice" type="number" class="mt-1 w-full bg-ink-900 border border-ink-600 rounded-lg px-3 py-2 text-mist-100"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="text-xs font-display text-mist-400 uppercase">ຄວາມຫາຍາກ</label>
+            <select id="pfRarity" class="mt-1 w-full bg-ink-900 border border-ink-600 rounded-lg px-3 py-2 text-mist-100"><option value="common">Common</option><option value="rare">Rare</option><option value="epic">Epic</option><option value="legendary">Legendary</option></select>
+          </div>
+          <div><label class="text-xs font-display text-mist-400 uppercase">ສະຖານະ</label>
+            <select id="pfStatus" class="mt-1 w-full bg-ink-900 border border-ink-600 rounded-lg px-3 py-2 text-mist-100"><option value="available">ພ້ອມຂາຍ</option><option value="sold">ສິ້ນຄ່າມົດແລ້ວ</option><option value="hidden">ເຊື່ອງ</option></select>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-display text-mist-400 uppercase">ຈຳນວນສະຕັອກ (ເຫຼືອຈຳນວນເທົ່າໃດ)</label>
+          <input id="pfStock" type="number" min="0" placeholder="e.g. 5" class="mt-1 w-full bg-ink-900 border border-ink-600 rounded-lg px-3 py-2 text-mist-100">
+          <p class="text-[11px] text-mist-400 mt-1">ຈຳນວນນີ້ຈະສະແດງເປັນ "ເຫຼືອ X ອັນ" ໃຫ້ລູກຄ້າເຫັນ.</p>
+        </div>
+        <div>
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-display text-mist-400 uppercase">ຕົວເລືອກລາຄາ (ມື້ + ລາຄາ + ຂໍ້ມູນທີ່ລູກຄ້າຈະໄດ້ຮັບ, ເຊັ່ນ 1ມື້ / 3ມື້ / 7ມື້)</label>
+            <button type="button" onclick="addOptionRow()" class="text-xs text-plasma-400 hover:underline"><i class="fa-solid fa-plus mr-1"></i>ເພີ່ມຕົວເລືອກ</button>
+          </div>
+          <p class="text-[11px] text-mist-400 mt-1 mb-2">ຖ້າເພີ່ມຕົວເລືອກຢ່າງໜ້ອຍ 1 ລາຍການ, ລູກຄ້າຈະຕ້ອງເລືອກກ່ອນຊື້ ແລະ ລາຄາ "ຫຼັກ" ດ້ານເທິງຈະບໍ່ຖືກໃຊ້ (ໃຊ້ລາຄາຂອງແຕ່ລະຕົວເລືອກແທນ). ປະຫວ່າງໄວ້ຖ້າສິນຄ້ານີ້ມີລາຄາດຽວ.</p>
+          <div id="pfOptionsList" class="space-y-2"></div>
+        </div>
+        <div>
+          <label class="text-xs font-display text-mist-400 uppercase">ຮູບສິນຄ້າ (ອັບໂຫຼດຈາກເຄື່ອງ, ເລືອກໄດ້ຫຼາຍຮູບ)</label>
+          <p class="text-[11px] text-mist-400 mt-0.5">ລະບົບຈະຫຍໍ້ຮູບໃຫ້ອັດຕະໂນມັດ ແລະສະແດງເຕັມຮູບ ບໍ່ຕັດຂອບ ສ່ວນທີ່ຫວ່າງຈະເຕີມດ້ວຍພື້ນຫຼັງເບລີຮູບດຽວກັນ</p>
+          <input id="pfImagesFile" type="file" accept="image/*" multiple class="mt-1 block w-full text-sm text-mist-300 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-ink-700 file:text-mist-100 hover:file:bg-ink-600">
+          <div id="pfImagesPreview" class="flex flex-wrap gap-2 mt-2"></div>
+        </div>
+        <div>
+          <label class="text-xs font-display text-mist-400 uppercase">ລິ້ງວິດີໂອ YouTube (ຄລິບທີ່ລູກຄ້າຈະໄດ້ຮັບຫຼັງຈາກຊື້)</label>
+          <div class="relative mt-1">
+            <i class="fa-brands fa-youtube absolute left-3 top-1/2 -translate-y-1/2 text-red-500"></i>
+            <input id="pfVideoUrl" type="url" placeholder="https://youtube.com/watch?v=..." class="w-full bg-ink-900 border border-ink-600 rounded-lg pl-9 pr-3 py-2 text-mist-100 text-sm">
+          </div>
+          <p class="text-[11px] text-mist-400 mt-1">ວາງລິ້ງ YouTube ຂອງວິດີໂອ — ຫຼັງຈາກລູກຄ້າຊື້ ແລະ ໄດ້ຮັບການຢືນຢັນແລ້ວ, ລິ້ງນີ້ຈະສະແດງໃຫ້ລູກຄ້າກົດເປີດເບິ່ງໄດ້ໃນໜ້າ "ເບິ່ງລະຫັດທີຊື້ມາ".</p>
+        </div>
+        <div><label class="text-xs font-display text-mist-400 uppercase">ລາຍລະອຽດ</label><textarea id="pfDesc" rows="3" class="mt-1 w-full bg-ink-900 border border-ink-600 rounded-lg px-3 py-2 text-mist-100"></textarea></div>
+        <div>
+          <label class="text-xs font-display text-mist-400 uppercase">ລະຫັດໄອດີ / ຂໍ້ມູນທີ່ຈະສົ່ງໃຫ້ລູກຄ້າ (Username:Password ຫຼື Key)</label>
+          <textarea id="pfDeliveryCode" rows="2" placeholder="ຈະສະແດງໃຫ້ລູກຄ້າເຫັນ ຫຼັງຈາກອໍເດີຖືກຢືນຢັນ" class="mt-1 w-full bg-ink-900 border border-ink-600 rounded-lg px-3 py-2 text-mist-100 text-sm font-mono"></textarea>
+        </div>
+        <button onclick="saveProduct()" class="w-full py-2.5 rounded-lg bg-plasma-500 hover:bg-plasma-600 font-display font-600 mt-2">ບັນທຶກສິນຄ້າ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
+<script>
+const DB_KEYS = { users:'vp_users', admins:'vp_admins', products:'vp_products', orders:'vp_orders', logs:'vp_logs', session:'vp_session', theme:'vp_theme', settings:'vp_settings', topups:'vp_topups', activeTopups:'vp_active_topups' };
+
+/* =====================================================================
+   FIREBASE / FIRESTORE DATA LAYER
+   ທຸກຂໍ້ມູນ (users, admins, products, orders, logs, topups, activeTopups,
+   settings, redeem codes) ເກັບໃນ Firestore ແລະ sync ແບບ realtime.
+   session ແລະ theme ຍັງເກັບໃນເຄື່ອງ (localStorage) ເພາະເປັນຂອງແຕ່ລະອຸປະກອນ.
+   ===================================================================== */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDu01c0y-9KcRk4EZlGnI1lylE65Rv49jA",
+  authDomain: "mafgjojrn.firebaseapp.com",
+  projectId: "mafgjojrn",
+  storageBucket: "mafgjojrn.firebasestorage.app",
+  messagingSenderId: "861094971290",
+  appId: "1:861094971290:web:fe58ebe0fda23dae751c23",
+  measurementId: "G-JBK7PYBMFM"
+};
+firebase.initializeApp(FIREBASE_CONFIG);
+try{ firebase.analytics(); }catch(e){}
+const fdb = firebase.firestore();
+try{ fdb.settings({ ignoreUndefinedProperties:true, experimentalAutoDetectLongPolling:true }); }catch(e){}
+
+const FB = { loaded:false, error:null };
+const LOCAL_KEYS = new Set([DB_KEYS.session, DB_KEYS.theme]);
+const STORES = {};
+[DB_KEYS.users, DB_KEYS.admins, DB_KEYS.products, DB_KEYS.orders, DB_KEYS.logs, DB_KEYS.topups, DB_KEYS.activeTopups]
+  .forEach(k=>{ STORES[k] = { key:k, type:'array', map:new Map() }; });
+[DB_KEYS.settings, 'vp_redeem_codes']
+  .forEach(k=>{ STORES[k] = { key:k, type:'map', map:new Map() }; });
+
+// signature used to detect changes cheaply (long base64 strings are shortened)
+function sigOf(v){
+  return JSON.stringify(v, (k,x)=> (typeof x==='string' && x.length>2000) ? ('@'+x.length+x.slice(0,40)+x.slice(-40)) : x);
+}
+function _clean(v){ return v===undefined ? null : JSON.parse(JSON.stringify(v)); }
+function _docId(key, item){ return key===DB_KEYS.activeTopups ? item.userId : item.id; }
+
+let _fbErrShown = false;
+function _showFbError(err){
+  console.error('[Firebase]', err);
+  if(_fbErrShown) return; _fbErrShown = true;
+  const code = (err && (err.code||err.message)) || 'unknown';
+  const msg = 'ເຊື່ອມຕໍ່ Firebase ບໍ່ສຳເລັດ ('+code+')\nກະລຸນາກວດວ່າສ້າງ Firestore Database ແລ້ວ ແລະ ຕັ້ງ Rules ໃຫ້ອະນຸຍາດອ່ານ/ຂຽນ.';
+  try{ if(window.Swal) Swal.fire({icon:'error', title:'Firebase', text:msg, background:'#06070C', color:'#ECEFF3'}); else alert(msg); }catch(e){ alert(msg); }
+}
+
+function _listen(st){
+  return new Promise(resolve=>{
+    let first = true;
+    fdb.collection(st.key).onSnapshot(snap=>{
+      let changed = false;
+      snap.docChanges().forEach(ch=>{
+        if(ch.doc.metadata.hasPendingWrites) return;   // our own optimistic write, cache already has it
+        if(st.type==='map'){
+          const k = decodeURIComponent(ch.doc.id);
+          if(ch.type==='removed'){ if(st.map.delete(k)) changed = true; return; }
+          const v = ch.doc.data().v;
+          st.map.set(k, { v, sig:sigOf(v) }); changed = true;
+        } else {
+          const id = ch.doc.id;
+          if(ch.type==='removed'){ if(st.map.delete(id)) changed = true; return; }
+          const v = ch.doc.data();
+          st.map.set(id, { v, sig:sigOf(v) }); changed = true;
+        }
+      });
+      if(first){ first = false; resolve(true); }
+      else if(changed && window.__dbChanged){ try{ window.__dbChanged(st.key); }catch(e){ console.warn(e); } }
+    }, err=>{
+      FB.error = err; _showFbError(err);
+      if(first){ first = false; resolve(false); }
+    });
+  });
+}
+FB._p = Promise.race([
+  Promise.all(Object.values(STORES).map(_listen)).then(r=>{ FB.loaded = r.every(Boolean); return FB.loaded; }),
+  new Promise(res=>setTimeout(()=>res(false), 10000))
+]).then(ok=>{ if(!ok && !FB.loaded) _showFbError(FB.error || {code:'timeout'}); return ok; });
+FB.ready = ()=>FB._p;
+
+function _commit(ops){
+  if(!ops.length) return Promise.resolve();
+  const chunks = []; for(let i=0;i<ops.length;i+=400) chunks.push(ops.slice(i,i+400));
+  return Promise.all(chunks.map(ch=>{
+    const b = fdb.batch();
+    ch.forEach(o=>{ const ref = fdb.collection(o.col).doc(o.id); if(o.del) b.delete(ref); else b.set(ref, o.data); });
+    return b.commit();
+  })).catch(e=>{
+    console.error('Firestore write failed', e);
+    try{ if(window.Swal) Swal.fire({toast:true,position:'top-end',showConfirmButton:false,timer:5000,icon:'error',title:'ບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ',text:(e&&e.message)||'',background:'#06070C',color:'#ECEFF3'}); }catch(_){}
+  });
+}
+
+function loadDB(key, fallback){
+  if(LOCAL_KEYS.has(key) || !STORES[key]){
+    try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }catch(e){ return fallback; }
+  }
+  const st = STORES[key];
+  if(st.type==='array'){
+    const desc = key===DB_KEYS.logs;
+    const ents = [...st.map.entries()];
+    ents.sort((a,b)=> desc ? ((b[1].v._t||0)-(a[1].v._t||0)) : ((a[1].v._t||0)-(b[1].v._t||0)));
+    const arr = ents.map(e=>e[1].v);
+    Object.defineProperty(arr, '__ids', { value:new Set(st.map.keys()), enumerable:false });
+    return arr;
+  }
+  if(!st.map.size) return fallback;
+  const obj = {};
+  st.map.forEach((e,k)=>{ obj[k] = e.v; });
+  Object.defineProperty(obj, '__keys', { value:new Set(st.map.keys()), enumerable:false });
+  return obj;
+}
+
+function saveDB(key, val){
+  if(LOCAL_KEYS.has(key) || !STORES[key]){
+    try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+    return;
+  }
+  const st = STORES[key], ops = [];
+  if(st.type==='array'){
+    val = Array.isArray(val) ? val : [];
+    const seen = new Set(); let prevT = 0;
+    val.forEach((item,i)=>{
+      if(!item || typeof item!=='object') return;
+      const id = _docId(key, item); if(!id) return;
+      seen.add(id);
+      if(item._t==null){
+        const nxt = val[i+1];
+        if(i===0 && val.length>1 && nxt && nxt._t!=null) item._t = nxt._t - 1;
+        else item._t = Math.max(Date.now(), prevT+1);
+      }
+      prevT = item._t;
+      const sig = sigOf(item), cur = st.map.get(id);
+      if(!cur || cur.sig!==sig){ st.map.set(id, { v:item, sig }); ops.push({ col:key, id, data:_clean(item) }); }
+    });
+    const base = val.__ids || new Set(st.map.keys());
+    base.forEach(id=>{ if(!seen.has(id) && st.map.has(id)){ st.map.delete(id); ops.push({ col:key, id, del:true }); } });
+  } else {
+    val = (val && typeof val==='object') ? val : {};
+    const seen = new Set();
+    Object.keys(val).forEach(k=>{
+      seen.add(k);
+      const v = val[k], sig = sigOf(v), cur = st.map.get(k);
+      if(!cur || cur.sig!==sig){ st.map.set(k, { v, sig }); ops.push({ col:key, id:encodeURIComponent(k), data:{ v:_clean(v) } }); }
+    });
+    const base = val.__keys || new Set(st.map.keys());
+    base.forEach(k=>{ if(!seen.has(k) && st.map.has(k)){ st.map.delete(k); ops.push({ col:key, id:encodeURIComponent(k), del:true }); } });
+  }
+  _commit(ops);
+}
+
+// append one log entry (keeps only the newest ~500)
+function fbAddLog(entry){
+  const st = STORES[DB_KEYS.logs];
+  window.__lastLogT = Math.max(Date.now(), (window.__lastLogT||0)+1);
+  entry._t = window.__lastLogT;
+  st.map.set(entry.id, { v:entry, sig:sigOf(entry) });
+  const ops = [{ col:st.key, id:entry.id, data:_clean(entry) }];
+  if(st.map.size > 600){
+    const arr = [...st.map.entries()].sort((a,b)=>(a[1].v._t||0)-(b[1].v._t||0));
+    arr.slice(0, st.map.size-500).forEach(([id])=>{ st.map.delete(id); ops.push({ col:st.key, id, del:true }); });
+  }
+  _commit(ops);
+}
+
+// Balance change done as a Firestore transaction so two devices can never overwrite each other.
+// delta < 0 = deduct, delta > 0 = add.  opts.strict: throw 'INSUFFICIENT_BALANCE' instead of clamping at 0.
+async function adjustUserBalance(userId, delta, opts){
+  const ref = fdb.collection(DB_KEYS.users).doc(userId);
+  const next = await fdb.runTransaction(async tx=>{
+    const snap = await tx.get(ref);
+    const cur = snap.exists ? (Number(snap.data().balance)||0) : 0;
+    if(cur + delta < 0 && opts && opts.strict) throw new Error('INSUFFICIENT_BALANCE');
+    const n = Math.max(0, cur + delta);
+    if(snap.exists) tx.update(ref, { balance:n });
+    return n;
+  });
+  const e = STORES[DB_KEYS.users].map.get(userId);
+  if(e){ e.v.balance = next; e.sig = sigOf(e.v); }
+  return next;
+}
+// This file is the private admin console — it skips the login screen and
+// signs straight in as the admin account.
+
+// ---- Data layer: Firebase Firestore (see FIREBASE / FIRESTORE DATA LAYER above) ----
+// Balance change applied to the local user record. delta < 0 = deduct, delta > 0 = add.
+// opts.strict: throw 'INSUFFICIENT_BALANCE' instead of clamping at 0.
+
+// ---- Redeem codes (stored locally) ----
+const REDEEM_KEY = 'vp_redeem_codes';
+function loadRedeemCodes(){ return loadDB(REDEEM_KEY, {}); }
+function saveRedeemCodes(codes){ saveDB(REDEEM_KEY, codes); }
+
+// Resizes/compresses an uploaded image file before it's turned into a
+// base64 string. Without this, a phone photo (2-8MB) blows past the browser's
+// localStorage size limit and the settings fail to save.
+function compressImageFile(file, maxDim, quality){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onerror = ()=>reject(new Error('read failed'));
+    reader.onload = function(ev){
+      const img = new Image();
+      img.onerror = ()=>reject(new Error('image decode failed'));
+      img.onload = function(){
+        let w = img.width, h = img.height;
+        if(w > maxDim || h > maxDim){
+          if(w >= h){ h = Math.round(h * maxDim / w); w = maxDim; }
+          else { w = Math.round(w * maxDim / h); h = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4); }
+function nowISO(){ return new Date().toISOString(); }
+
+// shrink big numbers so they stay on one line inside a stat tile (e.g. 10,000,000 and up)
+function fitStatNum(el){
+  if(!el) return;
+  const n = (el.textContent||'').length;
+  el.style.whiteSpace = 'nowrap';
+  el.style.fontSize = n <= 9 ? '' : (n <= 11 ? 'clamp(1.5rem,6.4vw,2.3rem)' : (n <= 14 ? 'clamp(1.15rem,4.8vw,1.8rem)' : 'clamp(.95rem,3.8vw,1.4rem)'));
+}
+function fmtK(n){ return Number(n||0).toLocaleString('en-US'); }
+function fmtDate(iso){ const d=new Date(iso); return d.toLocaleDateString('lo-LA',{year:'numeric',month:'short',day:'numeric'}); }
+
+function openImgLightbox(src){ document.getElementById('imgLightboxImg').src = src; document.getElementById('imgLightbox').classList.remove('hidden'); }
+function closeImgLightbox(){ document.getElementById('imgLightbox').classList.add('hidden'); document.getElementById('imgLightboxImg').src = ''; }
+
+async function hashPassword(password, salt){
+  const enc = new TextEncoder();
+  const data = enc.encode(salt + ':' + password);
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function genSalt(){ return uid('salt'); }
+async function verifyPassword(password, salt, hash){ return (await hashPassword(password, salt)) === hash; }
+
+const CATEGORIES = [
+  { id:'ff', name:'Free Fire Panel', icon:'fa-fire' }, { id:'ffmax', name:'Free Fire MAX', icon:'fa-fire-flame-curved' },
+  { id:'mlbb', name:'Mobile Legends', icon:'fa-chess-knight' },
+  { id:'pubg', name:'PUBG Mobile', icon:'fa-gun' },
+  { id:'valorant', name:'Valorant', icon:'fa-crosshairs' },
+];
+
+async function seedIfNeeded(){
+  if(!FB.loaded) return;   // Firestore not reachable: don't seed
+  let admins = loadDB(DB_KEYS.admins, []);
+  if(admins.length === 0){
+    const salt = genSalt();
+    const hash = await hashPassword('TOH02094357757', salt);
+    admins.push({ id: 'adm_main', email: 'toh94357757@gmail.com', phone: '02094357757', passwordHash: hash, salt: salt, role: 'admin', createdAt: nowISO() });
+    saveDB(DB_KEYS.admins, admins);
+    log('SEED', 'Admin account seeded automatically on first install.');
+  }
+  if(loadDB(DB_KEYS.products, []).length === 0) saveDB(DB_KEYS.products, []);
+  if(loadDB(DB_KEYS.users, []).length === 0) saveDB(DB_KEYS.users, []);
+  if(loadDB(DB_KEYS.orders, []).length === 0) saveDB(DB_KEYS.orders, []);
+  if(loadDB(DB_KEYS.logs, []).length === 0) saveDB(DB_KEYS.logs, []);
+  if(loadDB(DB_KEYS.topups, []).length === 0) saveDB(DB_KEYS.topups, []);
+  if(!Object.keys(loadDB(DB_KEYS.settings, {})).length) saveDB(DB_KEYS.settings, { qrImage: null, bgImage: null, heroBannerImage: null, siteLogo: null, siteName: '', promoText: '', promoText2: '', fbApiKey: '', adminPanelUrl: 'https://admin94357757.netlify.app' });
+}
+
+function log(action, detail){ try{ fbAddLog({ id: uid('log'), action, detail, at: nowISO() }); }catch(e){ console.warn(e); } }
+
+const api = {
+  async register({username,password}){
+    const users = loadDB(DB_KEYS.users, []);
+    if(users.some(u=>u.username.toLowerCase()===username.toLowerCase())) throw new Error('ຊື່ຜູ້ໃຊ້ນີ້ຖືກນຳໃຊ້ແລ້ວ');
+    if(String(password).length<6) throw new Error('ລະຫັດຜ່ານອ່ອນເກີນໄປ, ກະລຸນາໃຊ້ 6 ໂຕຂຶ້ນໄປ');
+    const salt = genSalt();
+    const passwordHash = await hashPassword(password, salt);
+    const user = { id: uid('usr'), username, salt, passwordHash, email:'', phone:'', verified:false, favorites:[], balance:0, notifications:[
+      { id: uid('ntf'), title:'ຍິນດີຕ້ອນຮັບສູ່ TOH Shop', message:'ບັນຊີຂອງທ່ານຖືກສ້າງສຳເລັດແລ້ວ.', read:false, at: nowISO() }
+    ], createdAt: nowISO() };
+    users.push(user); saveDB(DB_KEYS.users, users);
+    log('REGISTER', `New user: ${username}`);
+    return { token: 'jwt.'+uid('tok'), user };
+  },
+  async login({id, password}){
+    const users = loadDB(DB_KEYS.users, []);
+    const user = users.find(u=> u.username.toLowerCase()===String(id).trim().toLowerCase());
+    if(!user) throw new Error('ບໍ່ພົບບັນຊີຜູ້ໃຊ້');
+    if(!user.passwordHash || !user.salt) throw new Error('ບັນຊີນີ້ບໍ່ມີລະຫັດຜ່ານໃນລະບົບ, ກະລຸນາສະໝັກໃໝ່');
+    const ok = await verifyPassword(password, user.salt, user.passwordHash);
+    if(!ok) throw new Error('ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ');
+    log('LOGIN', `User login: ${user.username}`);
+    return { token: 'jwt.'+uid('tok'), refreshToken: 'rft.'+uid('tok'), user };
+  },
+  async adminLogin({id, password}){
+    const admins = loadDB(DB_KEYS.admins, []);
+    const admin = admins.find(a=> a.email.toLowerCase()===String(id).toLowerCase() || a.phone===id);
+    if(!admin) throw new Error('ບໍ່ພົບບັນຊີແອດມິນ');
+    const ok = await verifyPassword(password, admin.salt, admin.passwordHash);
+    if(!ok) throw new Error('ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ');
+    log('ADMIN_LOGIN', `Admin login: ${admin.email}`);
+    return { token:'jwt.'+uid('atok'), admin };
+  },
+  async getProducts(){ return loadDB(DB_KEYS.products, []); },
+  async getProduct(id){ return loadDB(DB_KEYS.products, []).find(p=>p.id===id); },
+  async submitPayment({orderId, method, slipDataUrl}){
+    const orders = loadDB(DB_KEYS.orders, []);
+    const order = orders.find(o=>o.id===orderId);
+    if(!order) throw new Error('ບໍ່ພົບອໍເດີ');
+    order.paymentMethod = method; order.slip = slipDataUrl; order.status = 'pending_verification';
+    saveDB(DB_KEYS.orders, orders);
+    log('PAYMENT_SUBMIT', `Payment slip submitted for order ${orderId}`);
+    return order;
+  }
+};
+
+let SESSION = loadDB(DB_KEYS.session, null);
+
+(async function init(){
+  await FB.ready();
+  await seedIfNeeded();
+  // Auto-login as admin — no password screen in this file.
+  const _bypassAdmins = loadDB(DB_KEYS.admins, []);
+  if(_bypassAdmins.length){
+    const _bypassAdmin = _bypassAdmins[0];
+    SESSION = {role:'admin', id:_bypassAdmin.id};
+    saveDB(DB_KEYS.session, SESSION);
+  }
+  applyTheme(loadDB(DB_KEYS.theme,'dark'));
+  applyBackground();
+  renderSiteBranding();
+  renderMarquee();
+  renderAuthArea();
+  route();
+  window.addEventListener('hashchange', route);
+  document.getElementById('loadOverlay').style.transition='opacity .4s';
+  setTimeout(()=>{ document.getElementById('loadOverlay').style.opacity='0'; setTimeout(()=>document.getElementById('loadOverlay').remove(),400); }, 350);
+  setTimeout(()=>{ if(window.showWelcomePopup) window.showWelcomePopup(); }, 500);
+  window.__appReady = true;
+})();
+
+function route(){
+  go('admin', true);
+}
+
+function go(view, skipHash){
+  // admin.html only ever shows the admin console now — the customer-facing
+  // storefront views were removed so the admin never sees shop pages here.
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-admin').classList.add('active');
+  if(!skipHash) location.hash = '/admin';
+  window.scrollTo({top:0, behavior:'smooth'});
+  fillAdmin();
+  const _wantTab=(new URLSearchParams(location.search)).get('tab');
+  adminTab(_wantTab || 'overview');
+}
+
+
+function bnGo(target){
+  if(target==='products'){ go('admin'); return; }
+}
+function updateBottomNav(view){}
+
+function applyTheme(t){
+  document.documentElement.classList.toggle('dark', t==='dark');
+  document.getElementById('themeIcon').className = 'fa-solid ' + (t==='dark'?'fa-moon':'fa-sun') + ' text-sm';
+  document.body.style.backgroundColor = t==='dark' ? '#010103' : '#F3F6FB';
+  document.body.style.color = t==='dark' ? '#ECEFF3' : '#0F172A';
+  document.getElementById('bottomNav')?.classList.toggle('light-bar', t!=='dark');
+  saveDB(DB_KEYS.theme, t);
+}
+function toggleTheme(){ applyTheme(loadDB(DB_KEYS.theme,'dark')==='dark' ? 'light' : 'dark'); }
+
+function applyBackground(){
+  const settings = loadDB(DB_KEYS.settings, {qrImage:null, bgImage:null});
+  if(settings.bgImage){
+    document.body.style.backgroundImage = `linear-gradient(rgba(1,1,3,0.88), rgba(1,1,3,0.88)), url('${settings.bgImage}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundAttachment = 'fixed';
+    document.body.style.backgroundRepeat = 'no-repeat';
+  } else {
+    document.body.style.backgroundImage = '';
+    document.body.style.backgroundSize = '';
+    document.body.style.backgroundPosition = '';
+    document.body.style.backgroundAttachment = '';
+    document.body.style.backgroundRepeat = '';
+  }
+}
+
+function renderSiteBranding(){
+  const settings = loadDB(DB_KEYS.settings, {siteLogo:null, siteName:''});
+  const customName = (settings.siteName||'').trim();
+  document.querySelectorAll('.site-name-text').forEach(el=>{
+    if(customName){ el.textContent = customName; } else { el.innerHTML = 'TOH<span class="text-plasma-400"> Shop</span>'; }
+  });
+  document.querySelectorAll('.site-logo-slot').forEach(el=>{
+    if(settings.siteLogo){ el.innerHTML = `<img src="${settings.siteLogo}" class="w-full h-full object-cover">`; } else { el.innerHTML = '<i class="fa-solid fa-gamepad text-ink-950 text-sm"></i>'; }
+  });
+}
+
+function renderMarquee(){
+  const settings = loadDB(DB_KEYS.settings, {qrImage:null, bgImage:null, promoText:'', promoText2:'', marqueeSpeed:22, marqueeSpeed2:22});
+  const bar = document.getElementById('marqueeBar');
+  const track = document.getElementById('marqueeTrack');
+  const text = (settings.promoText||'').trim();
+  const speed = Math.min(120, Math.max(3, parseInt(settings.marqueeSpeed) || 22));
+  // animation-duration set inline (not just via the CSS class) so each bar can
+  // run at its own admin-set speed, always as an "infinite" loop — this keeps
+  // it scrolling continuously for as long as the page stays open (24/7 on a
+  // display screen), never stopping after one pass.
+  track.style.animationDuration = speed + 's';
+  if(!text){ bar.classList.add('hidden'); track.innerHTML=''; }
+  else { bar.classList.remove('hidden'); track.innerHTML = Array(4).fill(`<span>${escapeHtml(text)}</span>`).join(''); }
+  const bar2 = document.getElementById('marqueeBar2');
+  const track2 = document.getElementById('marqueeTrack2');
+  const text2 = (settings.promoText2||'').trim();
+  const speed2 = Math.min(120, Math.max(3, parseInt(settings.marqueeSpeed2) || 22));
+  track2.style.animationDuration = speed2 + 's';
+  if(!text2){ bar2.classList.add('hidden'); track2.innerHTML=''; }
+  else { bar2.classList.remove('hidden'); track2.innerHTML = Array(4).fill(`<span>${escapeHtml(text2)}</span>`).join(''); }
+}
+
+const Toast = Swal.mixin({ toast:true, position:'top-end', showConfirmButton:false, timer:2600, timerProgressBar:true, background:'#06070C', color:'#ECEFF3' });
+function toastOk(msg){ Toast.fire({icon:'success', title:msg}); }
+function toastErr(msg){ Toast.fire({icon:'error', title:msg}); }
+function toastInfo(msg){ Toast.fire({icon:'info', title:msg}); }
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+
+
+function renderAuthArea(){
+  const el = document.getElementById('authArea');
+  document.getElementById('notifBell').classList.add('hidden');
+  document.getElementById('navBalanceChip').classList.add('hidden');
+  document.getElementById('navBalanceChip').classList.remove('flex');
+  el.innerHTML = `<span class="px-4 py-2 rounded-full bg-plasma-500/20 text-plasma-400 text-sm font-display font-600"><i class="fa-solid fa-user-shield mr-1"></i> Admin</span>`;
+}
+function refreshAdminQrPreview(){
+  const settings = loadDB(DB_KEYS.settings, {qrImage:null});
+  const el = document.getElementById('adminQrPreview');
+  el.innerHTML = settings.qrImage ? `<img src="${settings.qrImage}" class="w-full h-full object-contain rounded-lg">` : 'ຍັງບໍ່ມີ QR';
+}
+document.getElementById('adminQrInput')?.addEventListener('change', async function(e){
+  const file = e.target.files[0]; if(!file) return;
+  try{
+    const dataUrl = await compressImageFile(file, 700, 0.88);
+    document.getElementById('adminQrPreview').innerHTML = `<img src="${dataUrl}" class="w-full h-full object-contain rounded-lg">`;
+    window._pendingAdminQr = dataUrl;
+  }catch(err){ toastErr('ບໍ່ສາມາດອ່ານຮູບນີ້ໄດ້'); }
+});
+function saveAdminQr(){
+  if(!window._pendingAdminQr) return toastErr('ກະລຸນາເລືອກຮູບ QR ກ່ອນ');
+  const settings = loadDB(DB_KEYS.settings, {qrImage:null});
+  settings.qrImage = window._pendingAdminQr;
+  saveDB(DB_KEYS.settings, settings);
+  window._pendingAdminQr = null;
+  toastOk('ບັນທຶກ QR ສຳເລັດ');
+}
+function removeAdminQr(){
+  const settings = loadDB(DB_KEYS.settings, {qrImage:null});
+  settings.qrImage = null; saveDB(DB_KEYS.settings, settings);
+  refreshAdminQrPreview();
+  toastOk('ລຶບ QR ແລ້ວ');
+}
+
+function refreshAdminBgPreview(){
+  const settings = loadDB(DB_KEYS.settings, {qrImage:null, bgImage:null});
+  const el = document.getElementById('adminBgPreview');
+  if(settings.bgImage){ el.style.backgroundImage = `url('${settings.bgImage}')`; el.textContent = ''; }
+  else { el.style.backgroundImage = ''; el.textContent = 'ຍັງບໍ່ມີພື້ນຫຼັງ (ໃຊ້ຄ່າເລີ່ມຕົ້ນ)'; }
+}
+document.getElementById('adminBgInput')?.addEventListener('change', async function(e){
+  const file = e.target.files[0]; if(!file) return;
+  try{
+    const dataUrl = await compressImageFile(file, 1600, 0.82);
+    const el = document.getElementById('adminBgPreview');
+    el.style.backgroundImage = `url('${dataUrl}')`;
+    el.textContent = '';
+    window._pendingAdminBg = dataUrl;
+  }catch(err){ toastErr('ບໍ່ສາມາດອ່ານຮູບນີ້ໄດ້'); }
+});
+function renderQrAmountAdmin(){
+  const settings = loadDB(DB_KEYS.settings, {});
+  const amounts = settings.topupAmounts || [10000,20000,50000,100000,200000,500000,1000000];
+  const qrMap = settings.qrByAmount || {};
+  const el = document.getElementById('qrAmountList');
+  if(!el) return;
+  el.innerHTML = amounts.map(amt => {
+    const hasQr = !!qrMap[amt];
+    return `<div class="flex items-center gap-3 p-3 rounded-lg bg-ink-900 border border-ink-700">
+      <div class="w-14 h-14 rounded-lg border border-ink-600 overflow-hidden flex items-center justify-center bg-ink-800 shrink-0">
+        ${hasQr ? `<img src="${qrMap[amt]}" class="w-full h-full object-contain">` : '<span class="text-[10px] text-mist-400">ໃຊ້QRຫຼັກ</span>'}
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="font-mono text-sm text-ion-400">₭ ${fmtK(amt)}</p>
+        <p class="text-[11px] text-mist-400">${hasQr ? 'QR ສະເພາະ' : 'ໃຊ້ QR ຫຼັກ'}</p>
+      </div>
+      <div class="flex flex-col gap-1.5 shrink-0">
+        <label class="cursor-pointer px-3 py-1.5 rounded-lg bg-plasma-500/20 text-plasma-300 text-xs font-display hover:bg-plasma-500/30">
+          <i class="fa-solid fa-upload mr-1"></i>ອັບໂຫຼດ
+          <input type="file" accept="image/*" class="hidden" onchange="saveQrForAmount(${amt}, this)">
+        </label>
+        ${hasQr ? `<button onclick="removeQrForAmount(${amt})" class="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-xs font-display hover:bg-red-500/30"><i class="fa-solid fa-trash mr-1"></i>ລຶບ</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+async function saveQrForAmount(amt, input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const settings = loadDB(DB_KEYS.settings, {});
+    if(!settings.qrByAmount) settings.qrByAmount = {};
+    settings.qrByAmount[amt] = e.target.result;
+    saveDB(DB_KEYS.settings, settings);
+    toastOk(`ບັນທຶກ QR ສຳລັບ ₭${fmtK(amt)} ສຳເລັດ`);
+    renderQrAmountAdmin();
+  };
+  reader.readAsDataURL(file);
+}
+function removeQrForAmount(amt){
+  const settings = loadDB(DB_KEYS.settings, {});
+  if(settings.qrByAmount) delete settings.qrByAmount[amt];
+  saveDB(DB_KEYS.settings, settings);
+  toastOk(`ລຶບ QR ສຳລັບ ₭${fmtK(amt)} ແລ້ວ`);
+  renderQrAmountAdmin();
+}
+function saveAdminBg(){
+  if(!window._pendingAdminBg) return toastErr('ກະລຸນາເລືອກຮູບພື້ນຫຼັງກ່ອນ');
+  const settings = loadDB(DB_KEYS.settings, {qrImage:null, bgImage:null});
+  settings.bgImage = window._pendingAdminBg;
+  saveDB(DB_KEYS.settings, settings);
+  window._pendingAdminBg = null;
+  applyBackground();
+  toastOk('ບັນທຶກພື້ນຫຼັງເວັບສຳເລັດ');
+}
+function removeAdminBg(){
+  const settings = loadDB(DB_KEYS.settings, {qrImage:null, bgImage:null});
+  settings.bgImage = null; saveDB(DB_KEYS.settings, settings);
+  refreshAdminBgPreview();
+  applyBackground();
+  toastOk('ລຶບພື້ນຫຼັງເວັບແລ້ວ');
+}
+
+function refreshAdminBrandPreview(){
+  const settings = loadDB(DB_KEYS.settings, {siteLogo:null, siteName:''});
+  const el = document.getElementById('adminLogoPreview');
+  el.innerHTML = settings.siteLogo ? `<img src="${settings.siteLogo}" class="w-full h-full object-cover">` : '<i class="fa-solid fa-vault"></i>';
+  document.getElementById('adminSiteName').value = settings.siteName || '';
+}
+document.getElementById('adminLogoInput')?.addEventListener('change', async function(e){
+  const file = e.target.files[0]; if(!file) return;
+  try{
+    const dataUrl = await compressImageFile(file, 640, 0.9);
+    document.getElementById('adminLogoPreview').innerHTML = `<img src="${dataUrl}" class="w-full h-full object-cover">`;
+    window._pendingAdminLogo = dataUrl;
+  }catch(err){ toastErr('ບໍ່ສາມາດອ່ານຮູບນີ້ໄດ້'); }
+});
+function saveAdminBrand(){
+  const settings = loadDB(DB_KEYS.settings, {siteLogo:null, siteName:''});
+  if(window._pendingAdminLogo) settings.siteLogo = window._pendingAdminLogo;
+  settings.siteName = document.getElementById('adminSiteName').value.trim();
+  saveDB(DB_KEYS.settings, settings);
+  window._pendingAdminLogo = null;
+  renderSiteBranding();
+  toastOk('ບັນທຶກໂລໂກ ແລະ ຊື່ເວັບສຳເລັດ');
+}
+function resetAdminBrand(){
+  const settings = loadDB(DB_KEYS.settings, {siteLogo:null, siteName:''});
+  settings.siteLogo = null; settings.siteName = '';
+  saveDB(DB_KEYS.settings, settings);
+  window._pendingAdminLogo = null;
+  refreshAdminBrandPreview();
+  renderSiteBranding();
+  toastOk('ນຳໃຊ້ໂລໂກ ແລະ ຊື່ເວັບຄ່າເລີ່ມຕົ້ນແລ້ວ');
+}
+
+function refreshAdminHeroBannerPreview(){
+  const settings = loadDB(DB_KEYS.settings, {heroBannerImage:null});
+  const el = document.getElementById('adminHeroBannerPreview');
+  el.innerHTML = settings.heroBannerImage ? `<img src="${settings.heroBannerImage}" class="w-full h-full object-cover">` : 'ຍັງບໍ່ມີແບນເນີ';
+}
+document.getElementById('adminHeroBannerInput')?.addEventListener('change', async function(e){
+  const file = e.target.files[0]; if(!file) return;
+  try{
+    const dataUrl = await compressImageFile(file, 1600, 0.82);
+    const el = document.getElementById('adminHeroBannerPreview');
+    el.innerHTML = `<img src="${dataUrl}" class="w-full h-full object-cover">`;
+    window._pendingAdminHeroBanner = dataUrl;
+  }catch(err){ toastErr('ບໍ່ສາມາດອ່ານຮູບນີ້ໄດ້'); }
+});
+function saveAdminHeroBanner(){
+  if(!window._pendingAdminHeroBanner) return toastErr('ກະລຸນາເລືອກຮູບແບນເນີກ່ອນ');
+  const settings = loadDB(DB_KEYS.settings, {heroBannerImage:null});
+  settings.heroBannerImage = window._pendingAdminHeroBanner;
+  saveDB(DB_KEYS.settings, settings);
+  window._pendingAdminHeroBanner = null;
+  toastOk('ບັນທຶກແບນເນີ Hero ສຳເລັດ');
+}
+function removeAdminHeroBanner(){
+  const settings = loadDB(DB_KEYS.settings, {heroBannerImage:null});
+  settings.heroBannerImage = null; saveDB(DB_KEYS.settings, settings);
+  refreshAdminHeroBannerPreview();
+  toastOk('ລຶບແບນເນີ Hero ແລ້ວ');
+}
+
+function refreshAdminMarqueeInput(){
+  const settings = loadDB(DB_KEYS.settings, {qrImage:null, bgImage:null, promoText:'', promoText2:'', marqueeSpeed:22, marqueeSpeed2:22});
+  const el = document.getElementById('marqueeInput');
+  if(el) el.value = settings.promoText || '';
+  const el2 = document.getElementById('marqueeInput2');
+  if(el2) el2.value = settings.promoText2 || '';
+  const sEl = document.getElementById('marqueeSpeedInput');
+  if(sEl) sEl.value = settings.marqueeSpeed || 22;
+  const sEl2 = document.getElementById('marqueeSpeedInput2');
+  if(sEl2) sEl2.value = settings.marqueeSpeed2 || 22;
+}
+function saveMarquee(){
+  const text = document.getElementById('marqueeInput').value.trim();
+  const speedRaw = parseInt(document.getElementById('marqueeSpeedInput').value);
+  const speed = Math.min(120, Math.max(3, isNaN(speedRaw) ? 22 : speedRaw));
+  const settings = loadDB(DB_KEYS.settings, {qrImage:null, bgImage:null, promoText:'', promoText2:'', marqueeSpeed:22, marqueeSpeed2:22});
+  settings.promoText = text;
+  settings.marqueeSpeed = speed;
+  saveDB(DB_KEYS.settings, settings);
+  document.getElementById('marqueeSpeedInput').value = speed;
+  renderMarquee();
+  toastOk(text ? 'ບັນທຶກຂໍ້ຄວາມແລ່ນສຳເລັດ' : 'ບັນທຶກແລ້ວ (ຫວ່າງ, ເຊື່ອງແຖບ)');
+}
+function saveMarquee2(){
+  const text = document.getElementById('marqueeInput2').value.trim();
+  const speedRaw = parseInt(document.getElementById('marqueeSpeedInput2').value);
+  const speed = Math.min(120, Math.max(3, isNaN(speedRaw) ? 22 : speedRaw));
+  const settings = loadDB(DB_KEYS.settings, {qrImage:null, bgImage:null, promoText:'', promoText2:'', marqueeSpeed:22, marqueeSpeed2:22});
+  settings.promoText2 = text;
+  settings.marqueeSpeed2 = speed;
+  saveDB(DB_KEYS.settings, settings);
+  document.getElementById('marqueeSpeedInput2').value = speed;
+  renderMarquee();
+  toastOk(text ? 'ບັນທຶກຂໍ້ຄວາມແລ່ນສຳເລັດ' : 'ບັນທຶກແລ້ວ (ຫວ່າງ, ເຊື່ອງແຖບ)');
+}
+function removeMarquee2(){
+  const settings = loadDB(DB_KEYS.settings, {qrImage:null, bgImage:null, promoText:'', promoText2:''});
+  settings.promoText2 = '';
+  saveDB(DB_KEYS.settings, settings);
+  document.getElementById('marqueeInput2').value = '';
+  renderMarquee();
+  toastOk('ລຶບຂໍ້ຄວາມແລ່ນແຖບທີ 2 ແລ້ວ');
+}
+function removeMarquee(){
+  const settings = loadDB(DB_KEYS.settings, {qrImage:null, bgImage:null, promoText:'', promoText2:''});
+  settings.promoText = '';
+  saveDB(DB_KEYS.settings, settings);
+  document.getElementById('marqueeInput').value = '';
+  renderMarquee();
+  toastOk('ລຶບຂໍ້ຄວາມແລ່ນແລ້ວ');
+}
+
+function manualRefreshTopups(){
+  toastInfo('ກຳລັງໂຫຼດຄືນໃໝ່...');
+  renderAdminTopups(); toastOk('ໂຫຼດຄືນໃໝ່ແລ້ວ');
+}
+function renderAdminTopups(){
+  const topups = loadDB(DB_KEYS.topups, []).filter(t=>t.status==='pending_verification');
+  const users = loadDB(DB_KEYS.users, []);
+  document.getElementById('admTopupList').innerHTML = topups.map(t=>{
+    const u = users.find(x=>x.id===t.userId)||{username:'-'};
+    const ai = t.aiRead;
+    const aiBlock = ai ? `<div class="mt-2 px-2.5 py-2 rounded-lg bg-plasma-500/10 border border-plasma-500/30 text-[11px] text-mist-200 leading-relaxed">
+        <p class="text-plasma-400 font-display font-600 mb-0.5"><i class="fa-solid fa-robot mr-1"></i>AI ອ່ານໄດ້ (ບໍ່ແມ່ນການພິສູດ)</p>
+        💰 ${ai.amount!=null? '₭'+fmtK(ai.amount) : '-'} · 👤 ${escapeHtml(ai.sender||'-')} → ${escapeHtml(ai.receiver||'-')}<br>📅 ${escapeHtml(ai.datetime||'-')} · #${escapeHtml(ai.ref||'-')}
+      </div>` : '';
+    const reviewBlock = (t.aiDecision && t.aiDecision.needsReview) ? `<div class="mt-2 px-2.5 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-[11px] text-yellow-400 leading-relaxed">
+        <i class="fa-solid fa-triangle-exclamation mr-1"></i><b>AI ບໍ່ໝັ້ນໃຈ:</b> ${escapeHtml(t.aiDecision.reviewReason||'')} — ກະລຸນາເບິ່ງຮູບໃຫ້ລະອຽດແລ້ວຕັດສິນເອງ
+      </div>` : '';
+    return `<div class="bg-ink-800/60 border border-ink-700 rounded-xl p-4">
+      <img src="${t.slip}" class="w-full h-40 object-cover rounded-lg border border-ink-700 mb-3 cursor-zoom-in" onclick="openImgLightbox('${t.slip}')">
+      <p class="text-sm text-mist-200 font-display">${escapeHtml(u.username)}</p>
+      <p class="text-xs text-mist-400">₭${fmtK(t.amount)} · ${fmtDate(t.createdAt)}</p>
+      ${aiBlock}
+      ${reviewBlock}
+      <div class="flex gap-2 mt-3"><button onclick="openImgLightbox('${t.slip}')" class="flex-1 py-2 rounded-lg bg-ink-700 hover:bg-ink-600 text-mist-200 text-xs font-display"><i class="fa-solid fa-expand mr-1"></i>ເບິ່ງເຕັມ</button></div>
+      <div class="flex gap-2 mt-2">
+        <button onclick="verifyTopup('${t.id}', true)" class="flex-1 py-2 rounded-lg bg-green-500/20 text-green-400 text-xs font-display hover:bg-green-500/30">ອະນຸມັດ</button>
+        <button onclick="verifyTopup('${t.id}', false)" class="flex-1 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs font-display hover:bg-red-500/30">ປະຕິເສດ</button>
+      </div>
+    </div>`;
+  }).join('') || `<div class="col-span-full text-center py-10 text-mist-400"><i class="fa-solid fa-check-double text-3xl mb-2"></i><p>ບໍ່ມີການເຕີມເງິນທີ່ລໍຖ້າກວດສອບ</p></div>`;
+  renderRecentAiDecisions();
+}
+function renderRecentAiDecisions(){
+  const el = document.getElementById('admAiDecisionsList');
+  if(!el) return;
+  const all = loadDB(DB_KEYS.topups, []).filter(t=>t.aiDecision && !t.aiDecision.needsReview).sort((a,b)=>new Date(b.verifiedAt||b.createdAt)-new Date(a.verifiedAt||a.createdAt)).slice(0,15);
+  const users = loadDB(DB_KEYS.users, []);
+  el.innerHTML = all.map(t=>{
+    const u = users.find(x=>x.id===t.userId)||{username:'-'};
+    const ok = t.aiDecision.approved;
+    const reasonsTxt = (t.aiDecision.reasons&&t.aiDecision.reasons.length) ? escapeHtml(t.aiDecision.reasons.join('; ')) : '';
+    return `<div class="bg-ink-800/60 border border-ink-700 rounded-xl p-3 flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <p class="text-sm text-mist-200">${escapeHtml(u.username)} · ₭${fmtK(t.amount)}</p>
+        <p class="text-[11px] ${ok?'text-green-400':'text-red-400'}">${ok?'✅ ອະນຸມັດອັດຕະໂນມັດ':'❌ ປະຕິເສດອັດຕະໂນມັດ'}${reasonsTxt?': '+reasonsTxt:''}</p>
+      </div>
+      <div class="flex gap-1 shrink-0">
+        <button onclick="openImgLightbox('${t.slip}')" class="text-xs px-2 py-1.5 rounded-lg bg-ink-700 hover:bg-ink-600 text-mist-200"><i class="fa-solid fa-image"></i></button>
+        <button onclick="overrideTopupDecision('${t.id}', ${!ok})" class="text-xs px-2.5 py-1.5 rounded-lg ${ok?'bg-red-500/20 text-red-400 hover:bg-red-500/30':'bg-green-500/20 text-green-400 hover:bg-green-500/30'}">${ok?'ຍົກເລີກ':'ອະນຸມັດແທນ'}</button>
+      </div>
+    </div>`;
+  }).join('') || `<p class="text-mist-400 text-sm text-center py-4">ຍັງບໍ່ມີການຕັດສິນຂອງ AI</p>`;
+}
+async function overrideTopupDecision(topupId, approve){
+  const topups = loadDB(DB_KEYS.topups, []);
+  const t = topups.find(x=>x.id===topupId); if(!t) return;
+  const wasApproved = t.status==='completed';
+  if(wasApproved === approve) return;
+  if(approve){
+    t.status='completed';
+    try{ await adjustUserBalance(t.userId, t.amount); }catch(e){ console.warn(e); return toastErr('ອັບເດດຍອດເງິນບໍ່ສຳເລັດ'); }
+    notifyUser(t.userId, 'ເຕີມເງິນຖືກອະນຸມັດ', `ແອດມິນໄດ້ກວດສອບແລະອະນຸມັດ ₭${fmtK(t.amount)} ໃຫ້ທ່ານແລ້ວ.`);
+  } else {
+    t.status='rejected';
+    if(wasApproved){ try{ await adjustUserBalance(t.userId, -t.amount); }catch(e){ console.warn(e); return toastErr('ອັບເດດຍອດເງິນບໍ່ສຳເລັດ'); } }
+    notifyUser(t.userId, 'ການເຕີມເງິນຖືກຍົກເລີກ', 'ແອດມິນໄດ້ກວດສອບແລະຍົກເລີກລາຍການເຕີມເງິນນີ້.');
+  }
+  t.verifiedAt = nowISO();
+  saveDB(DB_KEYS.topups, topups);
+  log('TOPUP_ADMIN_OVERRIDE', `Admin overrode AI decision for topup ${topupId} -> ${approve?'approved':'rejected'}`);
+  renderAdminTopups(); renderAdminOverview();
+  toastOk('ອັບເດດແລ້ວ');
+}
+async function verifyTopup(topupId, approve){
+  const topups = loadDB(DB_KEYS.topups, []);
+  const t = topups.find(x=>x.id===topupId); if(!t) return;
+  if(t.status!=='pending_verification') return;
+  t.status = approve? 'completed':'rejected'; t.verifiedAt = nowISO();
+  saveDB(DB_KEYS.topups, topups);
+  if(approve){
+    try{ await adjustUserBalance(t.userId, t.amount); }catch(e){ console.warn(e); t.status='pending_verification'; t.verifiedAt=null; saveDB(DB_KEYS.topups, topups); return toastErr('ອັບເດດຍອດເງິນບໍ່ສຳເລັດ'); }
+    notifyUser(t.userId, 'ເຕີມເງິນສຳເລັດ', `ທ່ານໄດ້ຮັບ ₭${fmtK(t.amount)}`);
+  } else {
+    notifyUser(t.userId, 'ການເຕີມເງິນຖືກປະຕິເສດ', 'ກະລຸນາກວດສອບສະລິບການໂອນເງິນ ຫຼື ຕິດຕໍ່ແອດມິນ.');
+  }
+  log('TOPUP_'+(approve?'APPROVE':'REJECT'), `Topup ${topupId}`);
+  renderAdminTopups(); renderAdminOverview();
+  toastOk(approve? 'ອະນຸມັດການເຕີມເງິນສຳເລັດ' : 'ປະຕິເສດການເຕີມເງິນແລ້ວ');
+}
+
+// ---- New top-up alert: polls for pending_verification top-ups the admin ----
+// hasn't seen yet, badges the nav item, and pops a toast so a top-up
+// request doesn't sit unnoticed while the admin is on another tab.
+const _seenTopupIds = new Set(JSON.parse(localStorage.getItem('vp_seen_topups') || '[]'));
+function _saveSeenTopups(){ localStorage.setItem('vp_seen_topups', JSON.stringify([..._seenTopupIds])); }
+async function checkNewTopups(){
+  const pending = loadDB(DB_KEYS.topups, []).filter(t=>t.status==='pending_verification');
+  const badge = document.getElementById('topupBadge');
+  if(badge){
+    if(pending.length){ badge.textContent = pending.length; badge.classList.remove('hidden'); }
+    else { badge.classList.add('hidden'); }
+  }
+  const newOnes = pending.filter(t=>!_seenTopupIds.has(t.id));
+  if(newOnes.length){
+    const users = loadDB(DB_KEYS.users, []);
+    newOnes.forEach(t=>{
+      _seenTopupIds.add(t.id);
+      const u = users.find(x=>x.id===t.userId) || {username:'-'};
+      Swal.fire({
+        toast:true, position:'top-end', showConfirmButton:false, timer:7000, timerProgressBar:true,
+        icon:'info', background:'#06070C', color:'#ECEFF3',
+        title:'ມີການແຈ້ງເຕີມເງິນໃໝ່!',
+        html:`<div style="font-size:13px;">${escapeHtml(u.username)} · ₭${fmtK(t.amount)}</div>`,
+      });
+    });
+    _saveSeenTopups();
+    const currentTab = document.getElementById('adm-topups');
+    if(currentTab && !currentTab.classList.contains('hidden')) renderAdminTopups();
+  }
+}
+setInterval(checkNewTopups, 10000);
+setTimeout(checkNewTopups, 3000);
+
+function notifyUser(userId, title, message){
+  const ntf = { id: uid('ntf'), title, message, read:false, at: nowISO() };
+  const users = loadDB(DB_KEYS.users,[]);
+  const user = users.find(u=>u.id===userId);
+  if(user){ user.notifications = user.notifications||[]; user.notifications.push(ntf); saveDB(DB_KEYS.users, users); }
+}
+
+async function adminTab(tab){
+  if(!document.getElementById('adm-'+tab)) tab='overview';
+  document.querySelectorAll('.admincontent').forEach(d=>d.classList.add('hidden'));
+  document.getElementById('adm-'+tab).classList.remove('hidden');
+  document.querySelectorAll('.adminnav').forEach(b=>b.classList.remove('bg-ink-700','text-mist-100'));
+  const _activeBtn = document.querySelector(`.adminnav[data-tab="${tab}"]`);
+  if(_activeBtn) _activeBtn.classList.add('bg-ink-700','text-mist-100');
+  if(tab==='products') renderAdminProducts();
+  if(tab==='users') renderAdminUsers();
+  if(tab==='qrsettings') renderQrAmountAdmin();
+  if(tab==='orders') renderAdminOrders();
+  if(tab==='payments') renderAdminPayments();
+  if(tab==='topups') renderAdminTopups();
+  if(tab==='codes') renderAdminCodes();
+  if(tab==='qrsettings') refreshAdminQrPreview();
+  if(tab==='bgsettings') refreshAdminBgPreview();
+  if(tab==='brandsettings') refreshAdminBrandPreview();
+  if(tab==='herobanner') refreshAdminHeroBannerPreview();
+  if(tab==='marqueesettings') refreshAdminMarqueeInput();
+  if(tab==='fbnotify') refreshFbNotifyInput();
+  if(tab==='overview') renderAdminOverview();
+}
+function fillAdmin(){ renderAdminOverview(); }
+
+async function renderAdminOverview(){
+  const users = loadDB(DB_KEYS.users, []);
+  const products = loadDB(DB_KEYS.products,[]);
+  const orders = loadDB(DB_KEYS.orders,[]);
+  const revenue = orders.filter(o=>o.status==='completed').reduce((s,o)=>s+o.amount,0);
+  document.getElementById('admStatUsers').textContent = users.length;
+  document.getElementById('admStatProducts').textContent = products.length;
+  const topupTotal = loadDB(DB_KEYS.topups,[]).filter(t=>t.status==='completed').reduce((sum,t)=>sum+(Number(t.amount)||0),0);
+  document.getElementById('admStatTopup').textContent = fmtK(topupTotal);
+  fitStatNum(document.getElementById('admStatTopup'));
+  document.getElementById('admStatRevenue').textContent = fmtK(revenue);
+  const recent = [...orders].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,6);
+  document.getElementById('admRecentOrders').innerHTML = recent.map(o=>{
+    const p = products.find(pp=>pp.id===o.productId)||{name:'-'};
+    const u = users.find(uu=>uu.id===o.userId)||{username:'-'};
+    const displayName = o.optionLabel ? `${p.name} (${o.optionLabel})` : p.name;
+    return `<div class="flex items-center justify-between border-b border-ink-700 pb-2"><span class="text-mist-300">${escapeHtml(u.username)} → ${escapeHtml(displayName)}</span><span class="font-mono text-ion-400">₭ ${fmtK(o.amount)}</span></div>`;
+  }).join('') || `<p class="text-mist-400 text-sm">ຍັງບໍ່ມີອໍເດີ</p>`;
+}
+
+function renderAdminProducts(){
+  const products = loadDB(DB_KEYS.products,[]).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const statusLabel = {available:'ພ້ອມຂາຍ',sold:'ຂາຍແລ້ວ',hidden:'ເຊື່ອງ'};
+  document.getElementById('admProductTable').innerHTML = products.map(p=>{
+    const stockDisplay = (p.stock===undefined||p.stock===null||p.stock==='') ? '-' : p.stock;
+    return `
+    <tr class="border-b border-ink-800 hover:bg-ink-800/40">
+      <td class="p-3 font-mono text-xs text-mist-400">${p.id.slice(0,10)}</td>
+      <td class="p-3 text-mist-200">${escapeHtml(p.name)}</td>
+      <td class="p-3 text-mist-400">${(CATEGORIES.find(c=>c.id===p.category)||{}).name||p.category}</td>
+      <td class="p-3 font-mono text-ion-400">₭${fmtK(p.price)}</td>
+      <td class="p-3 font-mono text-mist-300">${stockDisplay}</td>
+      <td class="p-3"><span class="text-xs px-2 py-1 rounded bg-ink-700 text-mist-300">${statusLabel[p.status]}</span></td>
+      <td class="p-3 text-mist-400 text-xs">${fmtDate(p.date)}</td>
+      <td class="p-3"><button onclick="openProductForm('${p.id}')" class="text-plasma-400 hover:underline text-xs mr-3">ແກ້ໄຂ</button><button onclick="deleteProduct('${p.id}')" class="text-red-400 hover:underline text-xs">ລຶບ</button></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="8" class="text-center py-8 text-mist-400">ຍັງບໍ່ມີສິນຄ້າ, ກົດ "ເພີ່ມສິນຄ້າ" ເພື່ອເລີ່ມໂພສສິນຄ້າຂອງທ່ານ</td></tr>`;
+}
+let _pfImages = [];
+function addOptionRow(label, price, delivery){
+  const row = document.createElement('div');
+  row.className = 'pf-option-row rounded-xl border border-ink-600 bg-ink-800/60 p-3 space-y-2';
+  row.innerHTML = `
+    <div class="flex gap-2">
+      <input type="text" placeholder="ມື້ (ເຊັ່ນ: 1 ມື້)" class="opt-label flex-1 bg-ink-900 border border-ink-600 rounded-lg px-3 py-2 text-mist-100 text-sm" value="${label?escapeHtml(label):''}">
+      <input type="number" placeholder="ລາຄາ (₭)" class="opt-price w-28 bg-ink-900 border border-ink-600 rounded-lg px-3 py-2 text-mist-100 text-sm" value="${price!=null&&price!==''?price:''}">
+      <button type="button" onclick="this.closest('.pf-option-row').remove()" class="w-9 h-9 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center shrink-0"><i class="fa-solid fa-trash"></i></button>
+    </div>
+    <textarea rows="2" placeholder="ຂໍ້ມູນທີ່ລູກຄ້າຈະໄດ້ຮັບ (ເຊັ່ນ: ໂຄດ / ບັນຊີ / ລິ້ງ ຂອງຕົວເລືອກນີ້)" class="opt-delivery w-full bg-ink-900 border border-ink-600 rounded-lg px-3 py-2 text-mist-100 text-sm font-mono">${delivery?escapeHtml(delivery):''}</textarea>`;
+  document.getElementById('pfOptionsList').appendChild(row);
+}
+function renderPfImagesPreview(){
+  const el = document.getElementById('pfImagesPreview');
+  el.innerHTML = _pfImages.map((src, idx)=>`<div class="relative w-20 h-20"><div class="img-fit w-20 h-20 rounded-lg border border-ink-700" style="background-image:url('${src}')"><img src="${src}" class="fit-main"></div><button type="button" onclick="removePfImage(${idx})" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center">✕</button></div>`).join('');
+}
+function removePfImage(idx){ _pfImages.splice(idx,1); renderPfImagesPreview(); }
+document.getElementById('pfImagesFile')?.addEventListener('change', async function(e){
+  const files = Array.from(e.target.files||[]);
+  if(!files.length) return;
+  for(const file of files){
+    try{
+      const dataUrl = await compressImageFile(file, 800, 0.78);
+      _pfImages.push(dataUrl);
+    }catch(err){ toastErr('ບໍ່ສາມາດອ່ານຮູບນີ້ໄດ້'); }
+  }
+  renderPfImagesPreview();
+  e.target.value = '';
+});
+function openProductForm(id){
+  const catSel = document.getElementById('pfCategory');
+  catSel.innerHTML = CATEGORIES.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  _pfImages = [];
+  document.getElementById('pfVideoUrl').value = '';
+  document.getElementById('pfOptionsList').innerHTML = '';
+  if(id){
+    const p = loadDB(DB_KEYS.products,[]).find(x=>x.id===id);
+    document.getElementById('pfTitle').textContent='ແກ້ໄຂສິນຄ້າ';
+    document.getElementById('pfId').value=p.id;
+    document.getElementById('pfName').value=p.name;
+    document.getElementById('pfCategory').value=p.category;
+    document.getElementById('pfPrice').value=p.price;
+    document.getElementById('pfRarity').value=p.rarity;
+    document.getElementById('pfStatus').value=p.status;
+    document.getElementById('pfStock').value = (p.stock===undefined||p.stock===null) ? '' : p.stock;
+    _pfImages = [...(p.images||[])];
+    document.getElementById('pfVideoUrl').value = p.videoUrl || '';
+    document.getElementById('pfDesc').value=p.description;
+    document.getElementById('pfDeliveryCode').value=p.deliveryCode||'';
+    (p.options||[]).forEach(o=>addOptionRow(o.label, o.price, o.deliveryCode));
+  } else {
+    document.getElementById('pfTitle').textContent='ເພີ່ມສິນຄ້າ';
+    ['pfId','pfName','pfPrice','pfStock','pfDesc','pfDeliveryCode'].forEach(id2=>document.getElementById(id2).value='');
+    document.getElementById('pfRarity').value='common'; document.getElementById('pfStatus').value='available';
+  }
+  renderPfImagesPreview();
+  document.getElementById('productFormModal').classList.remove('hidden');
+}
+function closeProductForm(){ document.getElementById('productFormModal').classList.add('hidden'); }
+function saveProduct(){
+  const id = document.getElementById('pfId').value;
+  const name = document.getElementById('pfName').value.trim();
+  const category = document.getElementById('pfCategory').value;
+  let price = parseFloat(document.getElementById('pfPrice').value)||0;
+  const rarity = document.getElementById('pfRarity').value;
+  const status = document.getElementById('pfStatus').value;
+  const stockRaw = document.getElementById('pfStock').value;
+  const stock = stockRaw===''? null : Math.max(0, parseInt(stockRaw)||0);
+  const images = _pfImages.length? [..._pfImages] : [`https://api.dicebear.com/7.x/shapes/svg?seed=${encodeURIComponent(name)}`];
+  const videoUrl = document.getElementById('pfVideoUrl').value.trim() || null;
+  const description = document.getElementById('pfDesc').value.trim();
+  const deliveryCode = document.getElementById('pfDeliveryCode').value.trim();
+  const options = [];
+  document.querySelectorAll('#pfOptionsList .pf-option-row').forEach(row=>{
+    const label = row.querySelector('.opt-label').value.trim();
+    const optPrice = parseFloat(row.querySelector('.opt-price').value)||0;
+    const optDelivery = row.querySelector('.opt-delivery').value.trim();
+    if(label && optPrice>0) options.push({ id: uid('opt'), label, price: optPrice, deliveryCode: optDelivery });
+  });
+  if(!name) return toastErr('ກະລຸນາປ້ອນຊື່ສິນຄ້າ');
+  if(!options.length && !price) return toastErr('ກະລຸນາປ້ອນລາຄາ ຫຼື ເພີ່ມຕົວເລືອກລາຄາຢ່າງໜ້ອຍ 1 ລາຍການ');
+  if(options.length) price = Math.min(...options.map(o=>o.price));
+  const products = loadDB(DB_KEYS.products,[]);
+  if(id){
+    const idx = products.findIndex(p=>p.id===id);
+    products[idx] = {...products[idx], name,category,price,rarity,status,images,videoUrl,description,deliveryCode,stock,options};
+  } else {
+    products.unshift({ id:uid('prd'), name,category,price,rarity,status,images,videoUrl,description,deliveryCode,stock,options, date: nowISO(), featured:false });
+  }
+  saveDB(DB_KEYS.products, products);
+  closeProductForm(); renderAdminProducts();
+  toastOk('ບັນທຶກສິນຄ້າສຳເລັດ');
+}
+function deleteProduct(id){
+  Swal.fire({ title:'ລຶບສິນຄ້ານີ້?', icon:'warning', showCancelButton:true, confirmButtonColor:'#EF4444', cancelButtonColor:'#282E4A', confirmButtonText:'ລຶບ', cancelButtonText:'ຍົກເລີກ', background:'#06070C', color:'#ECEFF3' }).then(r=>{
+    if(r.isConfirmed){
+      let products = loadDB(DB_KEYS.products,[]).filter(p=>p.id!==id);
+      saveDB(DB_KEYS.products, products);
+      renderAdminProducts();
+      toastOk('ລຶບສິນຄ້າສຳເລັດ');
+    }
+  });
+}
+
+async function renderAdminUsers(){
+  const users = loadDB(DB_KEYS.users, []);
+  document.getElementById('admUserTable').innerHTML = users.map(u=>`
+    <tr class="border-b border-ink-800 hover:bg-ink-800/40">
+      <td class="p-3 text-mist-200">${escapeHtml(u.username)}</td>
+      <td class="p-3 text-mist-400">${escapeHtml(u.email||'-')}</td>
+      <td class="p-3 text-mist-400">${escapeHtml(u.phone||'-')}</td>
+      <td class="p-3 text-mist-400 text-xs">${fmtDate(u.createdAt)}</td>
+      <td class="p-3"><span class="text-xs px-2 py-1 rounded ${u.suspended?'bg-red-500/20 text-red-400':'bg-green-500/20 text-green-400'}">${u.suspended?'ຖືກລະງັບ':'ໃຊ້ງານໄດ້'}</span></td>
+      <td class="p-3">
+        <button onclick="openUserDetailModal('${u.id}')" class="text-xs text-ion-400 hover:underline mr-3">ລາຍລະອຽດ</button>
+        <button onclick="adminTopupUser('${u.id}')" class="text-xs text-green-400 hover:underline mr-3">ເຕີມເງິນ</button>
+        <button onclick="toggleSuspendUser('${u.id}')" class="text-xs text-plasma-400 hover:underline mr-3">${u.suspended?'ຍົກເລີກລະງັບ':'ລະງັບບັນຊີ'}</button>
+        <button onclick="deleteUser('${u.id}')" class="text-xs text-red-400 hover:underline">ລຶບ</button>
+      </td>
+    </tr>`).join('') || `<tr><td colspan="6" class="text-center py-8 text-mist-400">ຍັງບໍ່ມີຜູ້ໃຊ້</td></tr>`;
+}
+async function openUserDetailModal(userId){
+  const users = loadDB(DB_KEYS.users, []);
+  const u = users.find(x=>x.id===userId); if(!u) return;
+  const products = loadDB(DB_KEYS.products, []);
+  const orders = loadDB(DB_KEYS.orders, []).filter(o=>o.userId===userId).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  const statusMap = { pending_payment:['ລໍຖ້າຊຳລະ','text-yellow-400'], pending_verification:['ລໍຖ້າກວດສອບ','text-ion-400'], completed:['ສຳເລັດ','text-green-400'], rejected:['ຖືກປະຕິເສດ','text-red-400'] };
+  const orderRows = orders.map(o=>{
+    const p = products.find(pp=>pp.id===o.productId) || {name:'(ສິນຄ້າຖືກລຶບ)'};
+    const st = statusMap[o.status]||['-','text-mist-400'];
+    const displayName = o.optionLabel ? `${p.name} (${o.optionLabel})` : p.name;
+    const codeLine = (o.status==='completed' && o.deliveryCode) ? `<p class="text-xs font-mono text-ion-400 mt-1 truncate">${escapeHtml(o.deliveryCode)}</p>` : '';
+    return `<div class="bg-ink-900 border border-ink-700 rounded-lg p-3">
+      <div class="flex items-center justify-between gap-2">
+        <p class="text-sm text-mist-100 font-display truncate">${escapeHtml(displayName)}</p>
+        <span class="text-xs font-display ${st[1]} shrink-0">${st[0]}</span>
+      </div>
+      <p class="text-xs text-mist-400 mt-0.5">₭ ${fmtK(o.amount)} · ${fmtDate(o.createdAt)}</p>
+      ${codeLine}
+    </div>`;
+  }).join('') || `<p class="text-sm text-mist-400 text-center py-6">ຜູ້ໃຊ້ນີ້ຍັງບໍ່ໄດ້ຊື້ສິນຄ້າຫຍັງ</p>`;
+
+  document.getElementById('userDetailModalBody').innerHTML = `
+    <div class="flex items-start justify-between mb-5">
+      <div class="flex items-center gap-3">
+        <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(u.username)}" class="w-14 h-14 rounded-full border border-plasma-500/40">
+        <div>
+          <h3 class="font-display font-700 text-xl text-mist-100">${escapeHtml(u.username)}</h3>
+          <p class="text-xs text-mist-400">ສະໝັກ: ${fmtDate(u.createdAt)}</p>
+        </div>
+      </div>
+      <button onclick="closeUserDetailModal()" class="text-mist-400 hover:text-mist-100"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+
+    <div class="grid sm:grid-cols-3 gap-3 mb-5">
+      <div class="bg-ink-900 border border-ink-700 rounded-lg p-3"><p class="text-[10px] text-mist-400 uppercase font-display">ອີເມວ</p><p class="text-sm text-mist-200 mt-0.5 truncate">${escapeHtml(u.email||'-')}</p></div>
+      <div class="bg-ink-900 border border-ink-700 rounded-lg p-3"><p class="text-[10px] text-mist-400 uppercase font-display">ເບີໂທ</p><p class="text-sm text-mist-200 mt-0.5">${escapeHtml(u.phone||'-')}</p></div>
+      <div class="bg-ink-900 border border-ink-700 rounded-lg p-3"><p class="text-[10px] text-mist-400 uppercase font-display">ຍອດເງິນ</p><p class="text-sm text-ion-400 font-mono mt-0.5">₭ ${fmtK(u.balance||0)}</p><button onclick="adminTopupUser('${u.id}')" class="mt-2 text-[11px] px-2.5 py-1 rounded-full bg-green-500/20 text-green-400 hover:bg-green-500/30 font-display"><i class="fa-solid fa-plus mr-1"></i>ເຕີມເງິນ</button></div>
+    </div>
+
+    <div class="bg-ink-900/60 border border-ink-700 rounded-lg p-4 mb-5">
+      <p class="text-xs font-display text-mist-400 uppercase mb-2"><i class="fa-solid fa-key mr-1"></i> ລະຫັດຜ່ານ</p>
+      <p class="text-sm text-mist-400 leading-relaxed">ດ້ວຍເຫດຜົນດ້ານຄວາມປອດໄພ ລະຫັດຜ່ານຂອງລູກຄ້າຖືກເຂົ້າລະຫັດໄວ້ (hashed) ແອດມິນຈຶ່ງບໍ່ສາມາດເບິ່ງລະຫັດເດີມໄດ້. ຖ້າລູກຄ້າຕ້ອງການຄວາມຊ່ວຍເຫຼືອ ແອດມິນສາມາດຕັ້ງລະຫັດຜ່ານໃໝ່ໃຫ້ໄດ້:</p>
+      <button onclick="resetUserPassword('${u.id}')" class="mt-3 px-4 py-2 rounded-lg bg-ink-700 hover:bg-ink-600 text-mist-100 text-sm font-display font-600"><i class="fa-solid fa-rotate mr-1"></i> ຕັ້ງລະຫັດຜ່ານໃໝ່</button>
+      <button onclick="deleteUser('${u.id}'); closeUserDetailModal();" class="mt-3 ml-2 px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 text-sm font-display font-600"><i class="fa-solid fa-trash mr-1"></i> ລຶບຜູ້ໃຊ້ນີ້</button>
+    </div>
+
+    <p class="font-display text-mist-100 font-600 mb-3">ສິນຄ້າທີ່ຊື້ທັງໝົດ (${orders.length})</p>
+    <div class="space-y-2 max-h-72 overflow-y-auto">${orderRows}</div>
+  `;
+  document.getElementById('userDetailModal').classList.remove('hidden');
+}
+function closeUserDetailModal(){ document.getElementById('userDetailModal').classList.add('hidden'); }
+async function resetUserPassword(userId){
+  const users = loadDB(DB_KEYS.users, []);
+  const u = users.find(x=>x.id===userId);
+  if(!u) return;
+  const { value: newPassword, isConfirmed } = await Swal.fire({
+    title: `ຕ້ັງລະຫັດຜ່ານໃຫມ່ໃຫ້ ${escapeHtml(u.username)}`,
+    input: 'text',
+    inputLabel: 'ລະຫັດຜ່ານໃຫມ່ (6 ໂຕຂຶ້ນໄປ)',
+    inputPlaceholder: 'ປ້ອນລະຫັດຜ່ານໃຫມ່',
+    showCancelButton: true,
+    confirmButtonText: 'ຕ້ັງລະຫັດຜ່ານ',
+    cancelButtonText: 'ຍົກເລີກ',
+    background:'#06070C', color:'#ECEFF3', confirmButtonColor:'#1D5EE1', cancelButtonColor:'#282E4A',
+    inputValidator: v=>{ if(!v||v.length<6) return 'ລະຫັດຜ່ານຕ້ອງ 6 ໂຕຂຶ້ນໄປ'; }
+  });
+  if(!isConfirmed || !newPassword) return;
+  // hash password ດ້ວຍ SHA-256 (ດຽວກັນກັບ shop.html)
+  const msgBuf = new TextEncoder().encode(newPassword);
+  const hashBuf = await crypto.subtle.digest('SHA-256', msgBuf);
+  const pwHash = Array.from(new Uint8Array(hashBuf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  const idx = users.findIndex(x=>x.id===userId);
+  if(idx<0) return;
+  users[idx].passwordHash = pwHash;
+  saveDB(DB_KEYS.users, users);
+  notifyUser(userId, 'ລະຫັດຜ່ານຖີກຕ້ັງໃຫມ່', 'ແອັດມິນໄດ້ຕ້ັງລະຫັດຜ່ານໃຫມ່ໃຫ້ທ່ານ, ກະລຸນາຕິດຕໍ່ແອັດມິນເພື່ອຮັບລະຫັດຜ່ານໃຫມ່.');
+  log('ADMIN_RESET_PW', `Admin reset password for ${u.username}`);
+  Swal.fire({
+    icon:'success', title:'ຕ້ັງລະຫັດຜ່ານໃຫມ່ສຳເລີດ',
+    html:`ລະຫັດຜ່ານໃຫມ່ຂອງ <b>${escapeHtml(u.username)}</b> ແມ່ນ:<br><span class="font-mono text-xl text-ion-400">${escapeHtml(newPassword)}</span><br><br><span class="text-xs text-mist-400">ກະລຸນາສົ່ງລະຫັດນີ້ໃຫ້ລູກຄ້າ, ລະຫັດນີ້ຈະບໍ່ສະແດງອີກຄ້ັງ.</span>`,
+    background:'#06070C', color:'#ECEFF3', confirmButtonColor:'#1D5EE1'
+  });
+}
+function toggleSuspendUser(id){
+  const users = loadDB(DB_KEYS.users,[]);
+  const u = users.find(x=>x.id===id); u.suspended = !u.suspended;
+  saveDB(DB_KEYS.users, users); renderAdminUsers();
+  toastOk(u.suspended? 'ລະງັບບັນຊີແລ້ວ' : 'ຍົກເລີກການລະງັບແລ້ວ');
+}
+async function deleteUser(id){
+  const users = loadDB(DB_KEYS.users,[]);
+  const u = users.find(x=>x.id===id);
+  if(!u) return;
+  const result = await Swal.fire({
+    icon:'warning',
+    title:`ລຶ້ບຜູ້ໃຊ້ "${escapeHtml(u.username)}"?`,
+    html:`<p class="text-sm text-mist-400">ຂໍ້ມູນຜູ້ໃຊ້ ແລະ ປະຫວັດຈະຖີກລຶ້ບທັງຫມົດ ບໍ່ສາມາດກູ້ຄືນໄດ້</p>`,
+    showCancelButton: true,
+    confirmButtonText: 'ລຶ້ບເລີຍ',
+    cancelButtonText: 'ຍົກເລີກ',
+    background:'#06070C', color:'#ECEFF3', confirmButtonColor:'#EF4444', cancelButtonColor:'#282E4A'
+  });
+  if(!result.isConfirmed) return;
+  // 1. ລຶບຈາກ localStorage
+  const updated = users.filter(x=>x.id!==id);
+  saveDB(DB_KEYS.users, updated);
+  const topups = loadDB(DB_KEYS.topups,[]).filter(t=>t.userId!==id);
+  saveDB(DB_KEYS.topups, topups);
+  const orders = loadDB(DB_KEYS.orders,[]).filter(o=>o.userId!==id);
+  saveDB(DB_KEYS.orders, orders);
+  log('ADMIN_DELETE_USER', `Admin deleted user ${u.username} (${id})`);
+  toastOk(`ລຶ້ບຜູ້ໃຊ້ ${u.username} ສຳເລີດ`);
+  renderAdminUsers();
+  renderAdminOverview();
+}
+async function adminTopupUser(userId){
+  const users = loadDB(DB_KEYS.users, []);
+  const u = users.find(x=>x.id===userId); if(!u) return;
+  Swal.fire({
+    title: `ເຕີມເງິນໃຫ້ ${escapeHtml(u.username)}`,
+    html: `<p class="text-xs text-mist-400 mb-2">ຍອດປັດຈຸບັນ: <b class="text-ion-400">₭ ${fmtK(u.balance||0)}</b></p>`,
+    input: 'number',
+    inputLabel: 'ຈຳນວນເງິນທີ່ຈະເຕີມ (₭)',
+    inputPlaceholder: 'e.g. 50000',
+    showCancelButton: true,
+    confirmButtonText: 'ເຕີມເງິນ',
+    cancelButtonText: 'ຍົກເລີກ',
+    background:'#06070C', color:'#ECEFF3', confirmButtonColor:'#22C55E', cancelButtonColor:'#282E4A',
+    inputValidator: (value)=>{
+      if(!value || parseInt(value) <= 0) return 'ກະລຸນາປ້ອນຈຳນວນເງິນທີ່ຖືກຕ້ອງ';
+    }
+  }).then(async result=>{
+    if(!result.isConfirmed) return;
+    const amount = Math.max(0, parseInt(result.value)||0);
+    try{ await adjustUserBalance(userId, amount); }catch(e){ console.warn(e); return toastErr('ອັບເດດຍອດເງິນບໍ່ສຳເລັດ'); }
+    // record the manual credit so it counts toward the total top-up figure
+    const _tp = loadDB(DB_KEYS.topups, []);
+    _tp.push({ id: uid('top'), userId, amount, slip:null, status:'completed', source:'admin', createdAt: nowISO(), verifiedAt: nowISO() });
+    saveDB(DB_KEYS.topups, _tp);
+    const users2 = loadDB(DB_KEYS.users, []);
+    const idx = users2.findIndex(x=>x.id===userId);
+    if(idx<0) return;
+    notifyUser(userId, 'ເຕີມເງິນໂດຍແອດມິນ', `ແອດມິນໄດ້ເຕີມເງິນ ₭${fmtK(amount)} ເຂົ້າກະເປົາຂອງທ່ານ ໂດຍກົງ.`);
+    log('ADMIN_TOPUP', `Admin credited ₭${amount} to ${users2[idx].username} manually`);
+    renderAdminUsers();
+    renderAdminOverview();
+    const detailModal = document.getElementById('userDetailModal');
+    if(detailModal && !detailModal.classList.contains('hidden')) openUserDetailModal(userId);
+    toastOk(`ເຕີມເງິນ ₭${fmtK(amount)} ໃຫ້ ${users2[idx].username} ສຳເລັດ`);
+  });
+}
+
+
+function renderAdminOrders(){
+  const orders = loadDB(DB_KEYS.orders,[]).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  const users = loadDB(DB_KEYS.users,[]); const products = loadDB(DB_KEYS.products,[]);
+  const statusMap = { pending_payment:['ລໍຖ້າຊຳລະ','text-yellow-400'], pending_verification:['ລໍຖ້າກວດສອບ','text-ion-400'], completed:['ສຳເລັດ','text-green-400'], rejected:['ຖືກປະຕິເສດ','text-red-400'] };
+  document.getElementById('admOrderTable').innerHTML = orders.map(o=>{
+    const u = users.find(x=>x.id===o.userId)||{username:'-'};
+    const p = products.find(x=>x.id===o.productId)||{name:'-'};
+    const st = statusMap[o.status]||['-','text-mist-400'];
+    const displayName = o.optionLabel ? `${p.name} (${o.optionLabel})` : p.name;
+    return `<tr class="border-b border-ink-800 hover:bg-ink-800/40">
+      <td class="p-3 font-mono text-xs text-mist-400">${o.id.slice(0,10)}</td>
+      <td class="p-3 text-mist-200">${escapeHtml(u.username)}</td>
+      <td class="p-3 text-mist-300">${escapeHtml(displayName)}</td>
+      <td class="p-3 font-mono text-ion-400">₭${fmtK(o.amount)}</td>
+      <td class="p-3 text-xs font-display ${st[1]}">${st[0]}</td>
+      <td class="p-3">${o.status==='pending_verification'?`<button onclick="adminTab('payments')" class="text-xs text-plasma-400 hover:underline">ໄປໜ້າຢືນຢັນ</button>`:'-'}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="6" class="text-center py-8 text-mist-400">ຍັງບໍ່ມີອໍເດີ</td></tr>`;
+}
+
+function renderAdminPayments(){
+  const orders = loadDB(DB_KEYS.orders,[]).filter(o=>o.status==='pending_verification');
+  const users = loadDB(DB_KEYS.users,[]); const products = loadDB(DB_KEYS.products,[]);
+  document.getElementById('admPaymentList').innerHTML = orders.map(o=>{
+    const u = users.find(x=>x.id===o.userId)||{username:'-'};
+    const p = products.find(x=>x.id===o.productId)||{name:'-'};
+    const displayName = o.optionLabel ? `${p.name} (${o.optionLabel})` : p.name;
+    return `<div class="bg-ink-800/60 border border-ink-700 rounded-xl p-4">
+      ${o.slip ? `<img src="${o.slip}" class="w-full h-40 object-cover rounded-lg border border-ink-700 mb-3 cursor-zoom-in" onclick="openImgLightbox('${o.slip}')">` : `<div class="w-full h-24 flex items-center justify-center rounded-lg border border-ink-700 mb-3 text-ion-400 text-sm font-display"><i class="fa-solid fa-wallet mr-2"></i>ຈ່າຍດ້ວຍກະເປົາເງິນ (ຫັກເງິນແລ້ວ)</div>`}
+      <p class="text-sm text-mist-200 font-display">${escapeHtml(displayName)}</p>
+      <p class="text-xs text-mist-400">${escapeHtml(u.username)} · ₭${fmtK(o.amount)} · ${o.paymentMethod==='qr'?'QR':(o.paymentMethod==='balance'?'Wallet':'ໂອນທະນາຄານ')}</p>
+      ${o.slip ? `<div class="flex gap-2 mt-3"><button onclick="openImgLightbox('${o.slip}')" class="flex-1 py-2 rounded-lg bg-ink-700 hover:bg-ink-600 text-mist-200 text-xs font-display"><i class="fa-solid fa-expand mr-1"></i>ເບິ່ງເຕັມ</button></div>` : ''}
+      <div class="flex gap-2 mt-2">
+        <button onclick="verifyOrder('${o.id}', true)" class="flex-1 py-2 rounded-lg bg-green-500/20 text-green-400 text-xs font-display hover:bg-green-500/30">ອະນຸມັດ</button>
+        <button onclick="verifyOrder('${o.id}', false)" class="flex-1 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs font-display hover:bg-red-500/30">ປະຕິເສດ</button>
+      </div>
+    </div>`;
+  }).join('') || `<div class="col-span-full text-center py-10 text-mist-400"><i class="fa-solid fa-check-double text-3xl mb-2"></i><p>ບໍ່ມີການຊຳລະທີ່ລໍຖ້າກວດສອບ</p></div>`;
+}
+async function verifyOrder(orderId, approve){
+  const orders = loadDB(DB_KEYS.orders,[]);
+  const order = orders.find(o=>o.id===orderId); if(!order) return;
+  if(order.status!=='pending_verification'){ renderAdminPayments(); return toastErr('ອໍເດີນີ້ຖືກດຳເນີນການແລ້ວ'); }
+  order.status = approve? 'completed':'rejected';
+  order.verifiedAt = nowISO();
+  if(approve){
+    const products = loadDB(DB_KEYS.products,[]);
+    const p = products.find(x=>x.id===order.productId);
+    if(p){
+      if(p.stock !== undefined && p.stock !== null && p.stock !== ''){
+        const remaining = Math.max(0, (parseInt(p.stock)||0) - 1);
+        p.stock = remaining;
+        if(remaining <= 0) p.status='sold';
+      } else { p.status='sold'; }
+      saveDB(DB_KEYS.products, products);
+      const _opt = (p.options||[]).find(x=>x.label===order.optionLabel);
+      order.deliveryCode = (_opt && _opt.deliveryCode) || p.deliveryCode || `${p.name} — ຕິດຕໍ່ແອດມິນເພື່ອຮັບຂໍ້ມູນສິນຄ້າ`;
+      order.deliveryVideoUrl = p.videoUrl || null;
+    }
+  }
+  saveDB(DB_KEYS.orders, orders);
+  if(approve){ notifyUser(order.userId, 'ການຊຳລະເງິນຖືກຢືນຢັນ', 'ອໍເດີຂອງທ່ານສຳເລັດແລ້ວ! ເບິ່ງລະຫັດໄອດີໄດ້ທີ່ ປະຫວັດການສັ່ງຊື້ ຫຼື ເບິ່ງລະຫັດທີຊື້ມາ.'); }
+  else if(order.paymentMethod==='balance'){
+    // paid from wallet at purchase time -> give the money back on reject
+    try{ await adjustUserBalance(order.userId, order.amount); }catch(e){ console.warn(e); toastErr('ຄືນເງິນບໍ່ສຳເລັດ'); }
+    notifyUser(order.userId, 'ອໍເດີຖືກປະຕິເສດ', `ຄືນເງິນ ₭${fmtK(order.amount)} ເຂົ້າກະເປົາຂອງທ່ານແລ້ວ.`);
+  }
+  else { notifyUser(order.userId, 'ການຊຳລະເງິນຖືກປະຕິເສດ', 'ກະລຸນາກວດສອບສະລິບການໂອນເງິນ ຫຼື ຕິດຕໍ່ແອດມິນ.'); }
+  log('PAYMENT_'+(approve?'APPROVE':'REJECT'), `Order ${orderId}`);
+  renderAdminPayments(); renderAdminOrders(); renderAdminOverview();
+  toastOk(approve? 'ອະນຸມັດການຊຳລະເງິນສຳເລັດ' : 'ປະຕິເສດການຊຳລະເງິນແລ້ວ');
+}
+
+function refreshFbNotifyInput(){
+  const settings = loadDB(DB_KEYS.settings, {fbApiKey:'', adminPanelUrl:''});
+  const el = document.getElementById('fbApiKeyInput');
+  if(el) el.value = settings.fbApiKey || '';
+  const urlEl = document.getElementById('fbAdminUrlInput');
+  if(urlEl) urlEl.value = settings.adminPanelUrl || '';
+}
+function saveFbNotifySettings(){
+  const key = (document.getElementById('fbApiKeyInput').value||'').trim();
+  const adminUrl = (document.getElementById('fbAdminUrlInput').value||'').trim().replace(/\/$/,'');
+  const settings = loadDB(DB_KEYS.settings, {});
+  settings.fbApiKey = key;
+  settings.adminPanelUrl = adminUrl;
+  saveDB(DB_KEYS.settings, settings);
+  toastOk('ບັນທຶກສຳເລັດ');
+}
+function removeFbNotifySettings(){
+  const settings = loadDB(DB_KEYS.settings, {});
+  settings.fbApiKey = '';
+  saveDB(DB_KEYS.settings, settings);
+  const el = document.getElementById('fbApiKeyInput');
+  if(el) el.value = '';
+  toastOk('ລຶບ API Key ແລ້ວ');
+}
+function testFbNotify(){
+  const key = (document.getElementById('fbApiKeyInput').value||'').trim();
+  if(!key) return toastErr('ກະລຸນາປ້ອນ API Key ກ່ອນ');
+  const url = `https://api.callmebot.com/facebook/send.php?apikey=${encodeURIComponent(key)}&text=${encodeURIComponent('ທົດສອບແຈ້ງເຕືອນຈາກ TOH Shop ✅')}`;
+  new Image().src = url;
+  toastOk('ສົ່ງຂໍ້ຄວາມທົດສອບແລ້ວ — ກະລຸນາກວດ Messenger');
+}
+function broadcastNotification(){
+  const title = document.getElementById('broadcastTitle').value.trim();
+  const message = document.getElementById('broadcastMsg').value.trim();
+  if(!title||!message) return toastErr('ກະລຸນາປ້ອນຫົວຂໍ້ ແລະ ຂໍ້ຄວາມ');
+  const users = loadDB(DB_KEYS.users,[]);
+  users.forEach(u=> notifyUser(u.id, title, message));
+  document.getElementById('broadcastTitle').value=''; document.getElementById('broadcastMsg').value='';
+  toastOk(`ສົ່ງແຈ້ງເຕືອນໃຫ້ຜູ້ໃຊ້ ${users.length} ຄົນສຳເລັດ`);
+}
+
+// ===== ໂຄດເຕີມເງິນ (Redeem codes) — ເກັບໃນ localStorage =====
+function genRedeemCode(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // ບໍ່ມີ 0 O 1 I ເພື່ອບໍ່ໃຫ້ສັບສົນ
+  const arr=new Uint32Array(10); crypto.getRandomValues(arr);
+  let s=''; arr.forEach(n=>{ s+=chars[n%chars.length]; });
+  return s.slice(0,5)+'-'+s.slice(5);
+}
+async function createRedeemCode(){
+  const amount=parseInt(document.getElementById('codeAmount').value)||0;
+  const maxUses=parseInt(document.getElementById('codeMaxUses').value)||0;
+  if(amount<=0) return toastErr('ກະລຸນາປ້ອນຈຳນວນເງິນໃຫ້ຖືກຕ້ອງ');
+  if(maxUses<=0) return toastErr('ກະລຸນາປ້ອນຈຳນວນຄົນທີ່ຈຳກັດ');
+  try{
+    const codes=loadRedeemCodes();
+    let code; do{ code=genRedeemCode(); }while(codes[code]);
+    codes[code]={ code, amount, maxUses, usedCount:0, usedBy:[], active:true, createdAt:nowISO() };
+    saveRedeemCodes(codes);
+    document.getElementById('codeAmount').value='';
+    document.getElementById('codeMaxUses').value='';
+    log('CODE_CREATE', `Created code ${code} ₭${amount} x${maxUses}`);
+    renderAdminCodes();
+    Swal.fire({
+      icon:'success', title:'ສ້າງໂຄດສຳເລັດ',
+      html:`<div style="font-family:monospace;font-size:26px;letter-spacing:2px;color:#70CBFF;margin:10px 0;">${code}</div>
+            <p style="font-size:13px;color:#9AA1B3;">₭ ${fmtK(amount)} · ໃຊ້ໄດ້ ${fmtK(maxUses)} ຄົນ</p>`,
+      showCancelButton:true, confirmButtonText:'ຄັດລອກໂຄດ', cancelButtonText:'ປິດ',
+      background:'#06070C', color:'#ECEFF3', confirmButtonColor:'#22C55E', cancelButtonColor:'#282E4A'
+    }).then(r=>{ if(r.isConfirmed) copyRedeemCode(code); });
+  }catch(e){ console.warn(e); toastErr('ສ້າງໂຄດບໍ່ສຳເລັດ: '+(e.code||e.message||'')); }
+}
+function copyRedeemCode(code){
+  try{ navigator.clipboard.writeText(code).then(()=>toastOk('ຄັດລອກແລ້ວ: '+code)).catch(()=>toastInfo(code)); }
+  catch(e){ toastInfo(code); }
+}
+async function renderAdminCodes(){
+  const tb=document.getElementById('admCodeTable'); if(!tb) return;
+  tb.innerHTML='<tr><td colspan="6" class="p-6 text-center text-mist-400 text-sm">ກຳລັງໂຫຼດ...</td></tr>';
+  try{
+    const map=loadRedeemCodes();
+    const list=Object.values(map).sort((x,y)=>new Date(y.createdAt||0)-new Date(x.createdAt||0));
+    tb.innerHTML=list.map(c=>{
+      const used=c.usedCount||0, full=used>=c.maxUses;
+      let st, cls;
+      if(!c.active){ st='ປິດໃຊ້ງານ'; cls='text-mist-400'; }
+      else if(full){ st='ໃຊ້ຄົບແລ້ວ'; cls='text-red-400'; }
+      else { st='ໃຊ້ໄດ້'; cls='text-green-400'; }
+      return `<tr class="border-b border-ink-700/60">
+        <td class="p-3 font-mono text-ion-400 font-600">${escapeHtml(c.code)}</td>
+        <td class="p-3 font-mono">₭ ${fmtK(c.amount)}</td>
+        <td class="p-3 font-mono">${fmtK(used)} / ${fmtK(c.maxUses)}</td>
+        <td class="p-3 text-xs font-display ${cls}">${st}</td>
+        <td class="p-3 text-xs text-mist-400">${c.createdAt?fmtDate(c.createdAt):'-'}</td>
+        <td class="p-3 whitespace-nowrap">
+          <button onclick="copyRedeemCode('${escapeHtml(c.code)}')" class="text-xs text-ion-400 hover:underline mr-3">ຄັດລອກ</button>
+          <button onclick="toggleRedeemCode('${escapeHtml(c.code)}', ${c.active?'false':'true'})" class="text-xs text-plasma-400 hover:underline mr-3">${c.active?'ປິດ':'ເປີດ'}</button>
+          <button onclick="deleteRedeemCode('${escapeHtml(c.code)}')" class="text-xs text-red-400 hover:underline">ລຶບ</button>
+        </td></tr>`;
+    }).join('') || '<tr><td colspan="6" class="p-6 text-center text-mist-400 text-sm">ຍັງບໍ່ມີໂຄດ</td></tr>';
+  }catch(e){
+    console.warn(e);
+    tb.innerHTML='<tr><td colspan="6" class="p-6 text-center text-red-400 text-sm">ໂຫຼດໂຄດບໍ່ໄດ້: '+escapeHtml(e.code||e.message||'')+'</td></tr>';
+  }
+}
+async function _mutateRedeemCodes(fn){
+  const codes=loadRedeemCodes();
+  fn(codes);
+  saveRedeemCodes(codes);
+}
+async function toggleRedeemCode(code, active){
+  try{ await _mutateRedeemCodes(c=>{ if(c[code]) c[code].active=active; }); renderAdminCodes(); toastOk(active?'ເປີດໂຄດແລ້ວ':'ປິດໂຄດແລ້ວ'); }
+  catch(e){ console.warn(e); toastErr('ບໍ່ສຳເລັດ'); }
+}
+function deleteRedeemCode(code){
+  Swal.fire({ title:'ລຶບໂຄດນີ້?', text:code, icon:'warning', showCancelButton:true, confirmButtonText:'ລຶບ', cancelButtonText:'ຍົກເລີກ',
+    background:'#06070C', color:'#ECEFF3', confirmButtonColor:'#1D5EE1', cancelButtonColor:'#282E4A'
+  }).then(async r=>{
+    if(!r.isConfirmed) return;
+    try{ await _mutateRedeemCodes(c=>{ delete c[code]; }); log('CODE_DELETE', 'Deleted code '+code); renderAdminCodes(); toastOk('ລຶບແລ້ວ'); }
+    catch(e){ console.warn(e); toastErr('ລຶບບໍ່ສຳເລັດ'); }
+  });
+}
+</script>
+
+
+
+
+
+<!-- ===== Welcome popup: shop logo on entry (X button + "don't show for 24h") ===== -->
+<style>
+#welcomePopup{ display:none; position:fixed; inset:0; z-index:9980; align-items:center; justify-content:center; flex-direction:column;
+  background:rgba(0,0,0,.78); -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px); }
+#welcomePopup.show{ display:flex; animation:wpFade .45s ease both; }
+@keyframes wpFade{ from{ opacity:0; } to{ opacity:1; } }
+@keyframes wpPop{ from{ opacity:0; transform:scale(.86) translateY(10px); } to{ opacity:1; transform:scale(1) translateY(0); } }
+@keyframes wpGlow{ 0%,100%{ filter:drop-shadow(0 0 16px rgba(29,94,225,.55)); } 50%{ filter:drop-shadow(0 0 34px rgba(50,115,255,.95)); } }
+#welcomePopup .wp-inner{ width:min(88vw,420px); display:flex; flex-direction:column; align-items:center; gap:14px; }
+#welcomePopup .wp-logo{ width:min(74vw,340px); max-height:46vh; object-fit:contain; mix-blend-mode:screen; animation:wpPop .6s .1s cubic-bezier(.2,.9,.3,1.2) both, wpGlow 3.2s 0.7s ease-in-out infinite; }
+#welcomePopup .wp-close{ position:absolute; right:12px; top:calc(env(safe-area-inset-top,0px) + 34%); width:40px; height:40px; border-radius:9999px; border:0; cursor:pointer; color:#fff; font-size:18px;
+  background:linear-gradient(180deg,#4A81FF,#1D5EE1 55%,#1044B0); box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 6px 18px -4px rgba(29,94,225,.9); display:flex; align-items:center; justify-content:center; }
+#welcomePopup .wp-close:active{ transform:scale(.94); }
+#welcomePopup .wp-hide{ align-self:flex-start; display:inline-flex; align-items:center; gap:10px; padding:8px 16px 8px 10px; border-radius:9999px; background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.12); color:#ECEFF3; font-size:14px; cursor:pointer; user-select:none; }
+#welcomePopup .wp-hide input{ width:22px; height:22px; accent-color:#1D5EE1; cursor:pointer; }
+</style>
+<div id="welcomePopup" role="dialog" aria-modal="true" onclick="if(event.target===this) closeWelcomePopup()">
+  <button type="button" class="wp-close" aria-label="Close" onclick="closeWelcomePopup()"><i class="fa-solid fa-xmark"></i></button>
+  <div class="wp-inner">
+    <img id="welcomeLogo" class="wp-logo" alt="logo">
+    <label class="wp-hide"><input type="checkbox" id="welcomeHide24"><span>ບໍ່ສະແດງອີກໃນ 24 ຊົ່ວໂມງ</span></label>
+  </div>
+</div>
+<script>
+(function(){
+  const KEY = 'toh_welcome_hide_until_admin';
+  window.showWelcomePopup = function(){
+    try{
+      const st = (typeof loadDB==='function' && typeof DB_KEYS!=='undefined') ? loadDB(DB_KEYS.settings, {}) : {};
+      const logo = st && st.siteLogo;
+      if(!logo) return;                                   // no logo uploaded yet -> nothing to show
+      let until = 0; try{ until = Number(localStorage.getItem(KEY)) || 0; }catch(e){}
+      if(Date.now() < until) return;                      // hidden for 24h
+      document.getElementById('welcomeLogo').src = logo;
+      document.getElementById('welcomePopup').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }catch(e){ console.warn('welcome popup', e); }
+  };
+  window.closeWelcomePopup = function(){
+    const chk = document.getElementById('welcomeHide24');
+    if(chk && chk.checked){ try{ localStorage.setItem(KEY, String(Date.now() + 24*60*60*1000)); }catch(e){} }
+    document.getElementById('welcomePopup').classList.remove('show');
+    document.body.style.overflow = '';
+  };
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') window.closeWelcomePopup(); });
+})();
+</script>
+
+<!-- ❄ Snow effect (falls continuously) -->
+<canvas id="snowCanvas" aria-hidden="true" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9990;"></canvas>
+<script>
+(function(){
+  const canvas = document.getElementById('snowCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0, dpr = 1, flakes = [], t = 0;
+
+  function makeFlake(randomY){
+    const r = Math.random()*2.6 + 0.8;               // radius
+    return {
+      x: Math.random()*W,
+      y: randomY ? Math.random()*H : -10,
+      r: r,
+      vy: r*0.28 + Math.random()*0.7 + 0.35,          // bigger flakes fall faster
+      sway: Math.random()*1.2 + 0.3,
+      phase: Math.random()*Math.PI*2,
+      alpha: Math.random()*0.45 + 0.45
+    };
+  }
+
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W*dpr; canvas.height = H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const target = Math.round(Math.min(W*H/9000, 160)); // scales with screen size
+    while(flakes.length < target) flakes.push(makeFlake(true));
+    if(flakes.length > target) flakes.length = target;
+  }
+
+  function tick(){
+    t += 0.01;
+    ctx.clearRect(0,0,W,H);
+    const wind = Math.sin(t*0.6)*0.35;                 // gentle changing wind
+    for(const f of flakes){
+      f.y += f.vy;
+      f.x += Math.sin(t*2 + f.phase)*f.sway*0.5 + wind;
+      if(f.y > H + 10){ Object.assign(f, makeFlake(false)); }
+      if(f.x > W + 10) f.x = -10; else if(f.x < -10) f.x = W + 10;
+      // soft bluish halo so flakes stay visible on light and dark backgrounds
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, f.r*1.9, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(110,170,255,' + (f.alpha*0.22) + ')';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(255,255,255,' + f.alpha + ')';
+      ctx.fill();
+    }
+    requestAnimationFrame(tick);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  requestAnimationFrame(tick);
+})();
+</script>
+
+<script>
+// ---- Realtime refresh: when a customer changes data in Firestore, update the admin screen ----
+(function(){
+  let t = null;
+  window.__dbChanged = function(key){
+    if(!window.__appReady) return;
+    clearTimeout(t);
+    t = setTimeout(function(){
+      try{
+        if(key===DB_KEYS.topups){ checkNewTopups(); }
+        const vis = id=>{ const el=document.getElementById(id); return el && !el.classList.contains('hidden'); };
+        if(vis('adm-overview')) renderAdminOverview();
+        if(key===DB_KEYS.orders && vis('adm-orders') && typeof renderAdminOrders==='function') renderAdminOrders();
+        if(key===DB_KEYS.users && vis('adm-users') && typeof renderAdminUsers==='function') renderAdminUsers();
+        if(key===DB_KEYS.topups && vis('adm-topups') && typeof renderAdminTopups==='function') renderAdminTopups();
+      }catch(e){ console.warn('realtime refresh', e); }
+    }, 400);
+  };
+})();
+</script>
+</body>
+</html>
