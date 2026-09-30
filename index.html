@@ -185,7 +185,6 @@ h1.font-display, h2.font-display{ text-shadow:0 0 18px rgba(29,94,225,.45); }
           <button onclick="adminTab('brandsettings')" data-tab="brandsettings" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-shield-halved w-4"></i> ໂລໂກ ແລະ ຊື່ເວັບ</button>
           <button onclick="adminTab('herobanner')" data-tab="herobanner" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-panorama w-4"></i> ແບນເນີ Hero</button>
           <button onclick="adminTab('marqueesettings')" data-tab="marqueesettings" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-bullhorn w-4"></i> ຂໍ້ຄວາມແລ່ນ</button>
-          <button onclick="adminTab('fbnotify')" data-tab="fbnotify" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-brands fa-facebook-messenger w-4"></i> ແຈ້ງເຕືອນເຟສບຸກ</button>
           <button onclick="adminTab('notifications')" data-tab="notifications" class="adminnav w-full text-left px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-ink-700 text-mist-200"><i class="fa-solid fa-bell w-4"></i> ຈັດການແຈ້ງເຕືອນ</button>
         </nav>
       </aside>
@@ -367,25 +366,6 @@ h1.font-display, h2.font-display{ text-shadow:0 0 18px rgba(29,94,225,.45); }
   </div>
 </div>
 
-<div id="adm-fbnotify" class="admincontent hidden">
-  <h2 class="font-display font-700 text-2xl text-mist-100 mb-5">ແຈ້ງເຕືອນເຟສບຸກ (CallMeBot)</h2>
-  <div class="bg-ink-800/60 border border-ink-700 rounded-xl p-6 max-w-lg">
-    <p class="text-sm text-mist-400 mb-2">ເມື່ອລູກຄ້າແຈ້ງເຕີມເງິນ, ລະບົບຈະສົ່ງຂໍ້ຄວາມແຈ້ງເຕືອນເຂົ້າ Facebook Messenger ຂອງທ່ານໂດຍອັດຕະໂນມັດ (ຜ່ານ CallMeBot) ເຖິງແມ່ນວ່າແອດມິນຈະບໍ່ຢູ່ໜ້າເວັບກໍ່ຕາມ.</p>
-    <p class="text-xs text-mist-400 mb-4">ວິທີເອົາ API Key: ເປີດ Messenger, ຄົ້ນຫາ ແລະ ແຊັດກັບ <b class="text-mist-200">Callmebot</b> → ພິມ <b class="text-mist-200">create apikey</b> → ມັນຈະສົ່ງ API Key ກັບມາ, ຄັດລອກມາໃສ່ຊ່ອງລຸ່ມນີ້.</p>
-    <label class="text-xs font-display text-mist-400 uppercase">CallMeBot API Key</label>
-    <input id="fbApiKeyInput" type="text" placeholder="e.g. P46OrIYtjK7zq6IP" class="mt-1.5 w-full bg-ink-900 border border-ink-600 rounded-lg px-4 py-2.5 text-mist-100 focus:outline-none focus:ring-2 focus:ring-plasma-500/50">
-    <label class="text-xs font-display text-mist-400 uppercase mt-4 block">ລິ້ງໜ້າແອດມິນ (ຈະແປະໃສ່ໃນຂໍ້ຄວາມແຈ້ງເຕືອນ ໃຫ້ແອດມິນກົດໄປກວດ/ອະນຸມັດໄດ້ໄວ)</label>
-    <input id="fbAdminUrlInput" type="text" placeholder="https://admin94357757.netlify.app" class="mt-1.5 w-full bg-ink-900 border border-ink-600 rounded-lg px-4 py-2.5 text-mist-100 focus:outline-none focus:ring-2 focus:ring-plasma-500/50">
-    <div class="flex gap-2 mt-4">
-      <button onclick="saveFbNotifySettings()" class="px-5 py-2.5 rounded-lg bg-plasma-500 hover:bg-plasma-600 font-display font-600 text-sm">ບັນທຶກ</button>
-      <button onclick="testFbNotify()" class="px-5 py-2.5 rounded-lg bg-ion-500 hover:bg-ion-600 text-ink-950 font-display font-600 text-sm"><i class="fa-solid fa-paper-plane mr-1"></i>ສົ່ງທົດສອບ</button>
-      <button onclick="removeFbNotifySettings()" class="px-5 py-2.5 rounded-lg bg-ink-700 hover:bg-ink-600 text-mist-300 font-display font-600 text-sm">ລຶບ</button>
-    </div>
-  </div>
-</div>
-
-
-
 <div id="adm-notifications" class="admincontent hidden">
   <h2 class="font-display font-700 text-2xl text-mist-100 mb-5">ຈັດການແຈ້ງເຕືອນ</h2>
   <div class="bg-ink-800/60 border border-ink-700 rounded-xl p-5 max-w-xl">
@@ -552,12 +532,35 @@ function _showFbError(err){
   try{ if(window.Swal) Swal.fire({icon:'error', title:'Firebase', text:msg, background:'#06070C', color:'#ECEFF3'}); else alert(msg); }catch(e){ alert(msg); }
 }
 
+function _fbBanner(text){
+  try{
+    let b = document.getElementById('fbStatusBanner');
+    if(!b){
+      b = document.createElement('div'); b.id = 'fbStatusBanner';
+      b.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#7f1d1d;color:#fff;font:13px/1.4 sans-serif;padding:10px 14px;text-align:center';
+      (document.body||document.documentElement).appendChild(b);
+    }
+    b.textContent = text;
+  }catch(e){}
+}
+function _fbBannerHide(){ try{ const b = document.getElementById('fbStatusBanner'); if(b) b.remove(); }catch(e){} }
+
 function _listen(st){
   return new Promise(resolve=>{
     let first = true;
-    let gotServer = false;   // FIX: only trust a snapshot that came from the SERVER (not the empty offline cache)
-    fdb.collection(st.key).onSnapshot(snap=>{
+    let gotServer = false;   // only trust a snapshot that came from the SERVER (not the empty offline cache)
+    let subFirst = true;     // first server snapshot of each (re)subscription
+    const onSnap = snap=>{
       let changed = false;
+      if(!snap.metadata.fromCache){
+        _fbBannerHide();
+        if(subFirst){
+          subFirst = false;
+          // reconcile: drop anything the server no longer has (e.g. after a disconnect)
+          const ids = new Set(snap.docs.map(d=> st.type==='map' ? decodeURIComponent(d.id) : d.id));
+          [...st.map.keys()].forEach(k=>{ if(!ids.has(k)){ st.map.delete(k); changed = true; } });
+        }
+      }
       snap.docChanges().forEach(ch=>{
         if(ch.doc.metadata.hasPendingWrites) return;   // our own optimistic write, cache already has it
         if(st.type==='map'){
@@ -574,13 +577,20 @@ function _listen(st){
       });
       if(!gotServer && !snap.metadata.fromCache){
         gotServer = true; first = false; resolve(true);
-        if(window.__appReady && window.__dbChanged){ try{ window.__dbChanged(st.key); }catch(e){ console.warn(e); } }  // late server data -> refresh screen
+        if(window.__appReady && window.__dbChanged){ try{ window.__dbChanged(st.key); }catch(e){ console.warn(e); } }
       }
       else if(changed && window.__dbChanged){ try{ window.__dbChanged(st.key); }catch(e){ console.warn(e); } }
-    }, err=>{
+    };
+    const onErr = err=>{
       FB.error = err; _showFbError(err);
+      const code = (err && (err.code||err.message)) || 'unknown';
+      _fbBanner('⚠ ເຊື່ອມຕໍ່ຖານຂໍ້ມູນບໍ່ໄດ້ — ຂໍ້ມູນທີ່ເຫັນອາດບໍ່ຄົບ ('+st.key+': '+code+')');
       if(first){ first = false; resolve(false); }
-    });
+      subFirst = true;
+      setTimeout(sub, 8000);   // a failed listener never recovers by itself, so subscribe again
+    };
+    const sub = ()=>{ fdb.collection(st.key).onSnapshot(onSnap, onErr); };
+    sub();
   });
 }
 FB._p = Promise.race([
@@ -789,10 +799,6 @@ async function seedIfNeeded(){
   if(loadDB(DB_KEYS.orders, []).length === 0) saveDB(DB_KEYS.orders, []);
   if(loadDB(DB_KEYS.logs, []).length === 0) saveDB(DB_KEYS.logs, []);
   if(loadDB(DB_KEYS.topups, []).length === 0) saveDB(DB_KEYS.topups, []);
-  // FIX: never write null/empty defaults into settings (that used to wipe the logo, banner, QR...).
-  // Only add adminPanelUrl if it is really missing on the server.
-  { const _s = loadDB(DB_KEYS.settings, {});
-    if(!_s.adminPanelUrl){ _s.adminPanelUrl = 'https://admin94357757.netlify.app'; saveDB(DB_KEYS.settings, _s); } }
 }
 
 function log(action, detail){ try{ fbAddLog({ id: uid('log'), action, detail, at: nowISO() }); }catch(e){ console.warn(e); } }
@@ -988,7 +994,7 @@ function saveAdminQr(){
 }
 function removeAdminQr(){
   const settings = loadDB(DB_KEYS.settings, {qrImage:null});
-  settings.qrImage = null; saveDB(DB_KEYS.settings, settings);
+  delete settings.qrImage; saveDB(DB_KEYS.settings, settings);
   refreshAdminQrPreview();
   toastOk('ລຶບ QR ແລ້ວ');
 }
@@ -1067,7 +1073,7 @@ function saveAdminBg(){
 }
 function removeAdminBg(){
   const settings = loadDB(DB_KEYS.settings, {qrImage:null, bgImage:null});
-  settings.bgImage = null; saveDB(DB_KEYS.settings, settings);
+  delete settings.bgImage; saveDB(DB_KEYS.settings, settings);
   refreshAdminBgPreview();
   applyBackground();
   toastOk('ລຶບພື້ນຫຼັງເວັບແລ້ວ');
@@ -1107,7 +1113,7 @@ async function saveAdminBrand(){
 }
 function resetAdminBrand(){
   const settings = loadDB(DB_KEYS.settings, {siteLogo:null, siteName:''});
-  settings.siteLogo = null; settings.siteName = '';
+  delete settings.siteLogo; settings.siteName = '';
   saveDB(DB_KEYS.settings, settings);
   window._pendingAdminLogo = null;
   refreshAdminBrandPreview();
@@ -1139,7 +1145,7 @@ function saveAdminHeroBanner(){
 }
 function removeAdminHeroBanner(){
   const settings = loadDB(DB_KEYS.settings, {heroBannerImage:null});
-  settings.heroBannerImage = null; saveDB(DB_KEYS.settings, settings);
+  delete settings.heroBannerImage; saveDB(DB_KEYS.settings, settings);
   refreshAdminHeroBannerPreview();
   toastOk('ລຶບແບນເນີ Hero ແລ້ວ');
 }
@@ -1345,7 +1351,6 @@ async function adminTab(tab){
   if(tab==='brandsettings') refreshAdminBrandPreview();
   if(tab==='herobanner') refreshAdminHeroBannerPreview();
   if(tab==='marqueesettings') refreshAdminMarqueeInput();
-  if(tab==='fbnotify') refreshFbNotifyInput();
   if(tab==='overview') renderAdminOverview();
 }
 function fillAdmin(){ renderAdminOverview(); }
@@ -1578,13 +1583,12 @@ async function resetUserPassword(userId){
     inputValidator: v=>{ if(!v||v.length<6) return 'ລະຫັດຜ່ານຕ້ອງ 6 ໂຕຂຶ້ນໄປ'; }
   });
   if(!isConfirmed || !newPassword) return;
-  // hash password ດ້ວຍ SHA-256 (ດຽວກັນກັບ shop.html)
-  const msgBuf = new TextEncoder().encode(newPassword);
-  const hashBuf = await crypto.subtle.digest('SHA-256', msgBuf);
-  const pwHash = Array.from(new Uint8Array(hashBuf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  // same scheme as shop.html: sha256(salt + ':' + password) with a fresh salt
   const idx = users.findIndex(x=>x.id===userId);
   if(idx<0) return;
-  users[idx].passwordHash = pwHash;
+  const newSalt = genSalt();
+  users[idx].salt = newSalt;
+  users[idx].passwordHash = await hashPassword(newPassword, newSalt);
   saveDB(DB_KEYS.users, users);
   notifyUser(userId, 'ລະຫັດຜ່ານຖີກຕ້ັງໃຫມ່', 'ແອັດມິນໄດ້ຕ້ັງລະຫັດຜ່ານໃຫມ່ໃຫ້ທ່ານ, ກະລຸນາຕິດຕໍ່ແອັດມິນເພື່ອຮັບລະຫັດຜ່ານໃຫມ່.');
   log('ADMIN_RESET_PW', `Admin reset password for ${u.username}`);
@@ -1621,6 +1625,7 @@ async function deleteUser(id){
   saveDB(DB_KEYS.topups, topups);
   const orders = loadDB(DB_KEYS.orders,[]).filter(o=>o.userId!==id);
   saveDB(DB_KEYS.orders, orders);
+  saveDB(DB_KEYS.activeTopups, loadDB(DB_KEYS.activeTopups,[]).filter(x=>x.userId!==id));
   log('ADMIN_DELETE_USER', `Admin deleted user ${u.username} (${id})`);
   toastOk(`ລຶ້ບຜູ້ໃຊ້ ${u.username} ສຳເລີດ`);
   renderAdminUsers();
@@ -1737,37 +1742,6 @@ async function verifyOrder(orderId, approve){
   toastOk(approve? 'ອະນຸມັດການຊຳລະເງິນສຳເລັດ' : 'ປະຕິເສດການຊຳລະເງິນແລ້ວ');
 }
 
-function refreshFbNotifyInput(){
-  const settings = loadDB(DB_KEYS.settings, {fbApiKey:'', adminPanelUrl:''});
-  const el = document.getElementById('fbApiKeyInput');
-  if(el) el.value = settings.fbApiKey || '';
-  const urlEl = document.getElementById('fbAdminUrlInput');
-  if(urlEl) urlEl.value = settings.adminPanelUrl || '';
-}
-function saveFbNotifySettings(){
-  const key = (document.getElementById('fbApiKeyInput').value||'').trim();
-  const adminUrl = (document.getElementById('fbAdminUrlInput').value||'').trim().replace(/\/$/,'');
-  const settings = loadDB(DB_KEYS.settings, {});
-  settings.fbApiKey = key;
-  settings.adminPanelUrl = adminUrl;
-  saveDB(DB_KEYS.settings, settings);
-  toastOk('ບັນທຶກສຳເລັດ');
-}
-function removeFbNotifySettings(){
-  const settings = loadDB(DB_KEYS.settings, {});
-  settings.fbApiKey = '';
-  saveDB(DB_KEYS.settings, settings);
-  const el = document.getElementById('fbApiKeyInput');
-  if(el) el.value = '';
-  toastOk('ລຶບ API Key ແລ້ວ');
-}
-function testFbNotify(){
-  const key = (document.getElementById('fbApiKeyInput').value||'').trim();
-  if(!key) return toastErr('ກະລຸນາປ້ອນ API Key ກ່ອນ');
-  const url = `https://api.callmebot.com/facebook/send.php?apikey=${encodeURIComponent(key)}&text=${encodeURIComponent('ທົດສອບແຈ້ງເຕືອນຈາກ TOH Shop ✅')}`;
-  new Image().src = url;
-  toastOk('ສົ່ງຂໍ້ຄວາມທົດສອບແລ້ວ — ກະລຸນາກວດ Messenger');
-}
 function broadcastNotification(){
   const title = document.getElementById('broadcastTitle').value.trim();
   const message = document.getElementById('broadcastMsg').value.trim();
