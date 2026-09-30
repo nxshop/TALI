@@ -126,10 +126,24 @@ h1.font-display, h2.font-display{ text-shadow:0 0 18px rgba(29,94,225,.45); }
 </style>
 <div id="loadOverlay" class="fixed inset-0 z-[999] bg-ink-950 flex items-center justify-center">
   <div class="text-center">
-    <img id="loadLogo" class="toh-bob" alt="" style="display:none;width:min(46vw,180px);max-height:30vh;object-fit:contain;filter:drop-shadow(0 0 18px rgba(29,94,225,.55))">
-    <script>try{var _l=localStorage.getItem("toh_logo_cache");if(_l){var _i=document.getElementById("loadLogo");_i.src=_l;_i.style.display="inline-block";}}catch(e){}</script>
+    <div class="toh-bob font-display font-700 text-5xl tracking-widest text-plasma-500" style="text-shadow:0 0 22px rgba(29,94,225,.55)">TALI</div>
   </div>
 </div>
+<script>
+/* FAILSAFE: never let the logo loading screen stay forever */
+(function(){
+  function hide(){
+    var o=document.getElementById('loadOverlay'); if(!o) return;
+    o.style.transition='opacity .4s'; o.style.opacity='0';
+    setTimeout(function(){ var x=document.getElementById('loadOverlay'); if(x) x.remove(); },400);
+  }
+  setTimeout(hide, 10000);                       // hard limit: 10s
+  function onFail(e){ console.error('[TOH failsafe]', e && (e.reason || e.message || e)); setTimeout(function(){ if(!window.__appReady) hide(); }, 3000); }
+  window.addEventListener('error', onFail);
+  window.addEventListener('unhandledrejection', onFail);
+})();
+</script>
+
 
 
 <div id="topStack" class="sticky top-0 z-50">
@@ -604,7 +618,7 @@ function _listen(st){
 }
 FB._p = Promise.race([
   Promise.all(Object.values(STORES).map(_listen)).then(r=>{ FB.loaded = r.every(Boolean); return FB.loaded; }),
-  new Promise(res=>setTimeout(()=>res(false), 30000))
+  new Promise(res=>setTimeout(()=>res(false), 8000))
 ]).then(ok=>{ if(!ok && !FB.loaded) _showFbError(FB.error || {code:'timeout'}); return ok; });
 FB.ready = ()=>FB._p;
 
@@ -861,10 +875,7 @@ const api = {
 let SESSION = loadDB(DB_KEYS.session, null);
 
 (async function init(){
-  // returning visitor: don't sit on the loading logo waiting for every collection from the server (max 2.5s; data fills in live afterwards)
-  let _seen = false; try{ _seen = !!localStorage.getItem('toh_seen'); }catch(e){}
-  FB.ready().then(ok=>{ if(ok){ try{ localStorage.setItem('toh_seen','1'); }catch(e){} } });
-  if(_seen){ await Promise.race([FB.ready(), new Promise(r=>setTimeout(r,2500))]); } else { await FB.ready(); }
+  await FB.ready();
   await seedIfNeeded();
   // Auto-login as admin — no password screen in this file.
   const _bypassAdmins = loadDB(DB_KEYS.admins, []);
@@ -937,7 +948,6 @@ function applyBackground(){
 
 function renderSiteBranding(){
   const settings = loadDB(DB_KEYS.settings, {siteLogo:null, siteName:''});
-  try{ if(settings.siteLogo) localStorage.setItem('toh_logo_cache', settings.siteLogo); else localStorage.removeItem('toh_logo_cache'); }catch(e){}
   const customName = (settings.siteName||'').trim();
   document.querySelectorAll('.site-name-text').forEach(el=>{
     if(customName){ el.textContent = customName; } else { el.innerHTML = 'TOH<span class="text-plasma-400"> Shop</span>'; }
