@@ -556,6 +556,7 @@ function _showFbError(err){
 }
 
 function _fbBanner(text){
+  console.warn('[Firebase]', text); return;   // red status banner disabled
   try{
     let b = document.getElementById('fbStatusBanner');
     if(!b){
